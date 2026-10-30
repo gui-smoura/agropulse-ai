@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #0a1611;
+  color: #f0fdf4;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Container query setup for accessible responsive data tables */
+.responsive-table-wrapper {
+  container-type: inline-size;
+  max-inline-size: 100%;
+}
+
+/* Custom subtle scrollbars for dark agro executive theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a1611;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a3f37;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3d5a4f;
+}
