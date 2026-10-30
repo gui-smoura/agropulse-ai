@@ -195,3 +195,45 @@ class StockRebalancingReport(BaseModel):
     total_transferencias_sugeridas: int
     recomendacoes: list[StockTransferRecommendation]
     cobertura_filiais: list[BranchStockCoverageItem]
+
+
+class HealthCheckResponse(BaseModel):
+    """Output contract for `GET /api/health`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    status: Literal["ok"]
+    database_seeded: bool
+    records: dict[str, int]
+
+
+class DashboardOverviewResponse(BaseModel):
+    """Consolidated output contract for `GET /api/dashboard/overview`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    anomalias_climaticas: ClimateSalesAnomalyReport
+    afinidade_consultores: ConsultantAffinityReport
+    remanejamento_estoque: StockRebalancingReport
+
+
+class AgentChatRequest(BaseModel):
+    """Input payload contract for `POST /api/agent/chat`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    message: str = Field(
+        min_length=1,
+        max_length=2000,
+        description="Pergunta ou comando executivo enviado ao Copiloto Agêntico.",
+    )
+
+
+class AgentChatResponse(BaseModel):
+    """Output payload contract for `POST /api/agent/chat`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    reply: str
+    tools_used: list[str]
+

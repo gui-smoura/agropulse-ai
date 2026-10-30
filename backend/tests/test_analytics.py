@@ -1,17 +1,30 @@
-"""Unit and edge-case tests for AgroPulse AI SQLite schema, seed, and analytics engine."""
+"""Unit and edge-case tests for AgroPulse AI SQLite schema, seed, analytics, agent, and API."""
 
+import json
 from collections.abc import Generator
 from datetime import date
+from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 import pytest
+from fastapi.testclient import TestClient
+from openai import OpenAIError
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.agent.orchestrator import run_agent_chat
+from app.agent.tools import (
+    TOOL_ANALYZE_CONSULTANT_AFFINITY,
+    TOOL_DETECT_CLIMATE_ANOMALIES,
+    TOOL_RECOMMEND_STOCK_REBALANCING,
+    execute_agent_tool,
+)
 from app.analytics.engine import (
     analyze_consultant_product_affinity,
     detect_climate_sales_anomalies,
     recommend_stock_rebalancing,
 )
+from app.config import Settings
 from app.database.models import (
     Consultor,
     Filial,
@@ -19,6 +32,7 @@ from app.database.models import (
     Produto,
     RegistroVenda,
     create_db_engine,
+    get_db,
     init_db,
 )
 from app.database.seed_generator import (
@@ -26,6 +40,8 @@ from app.database.seed_generator import (
     ensure_database_seeded,
     seed_database,
 )
+from app.main import app
+from app.rate_limit import InMemoryRateLimiter, agent_rate_limiter
 
 
 @pytest.fixture(scope="module")
@@ -263,4 +279,330 @@ def test_recommend_stock_rebalancing_coverage_and_transfer_pattern(
         recommend_stock_rebalancing(
             max_coverage_days=10, min_coverage_days=20, session=seeded_session
         )
+
+
+def test_agent_tools_dispatcher_and_validation(seeded_session: Session) -> None:
+    """Verify Pydantic validation and JSON serialization in execute_agent_tool."""
+    anom_json = execute_agent_tool(
+        TOOL_DETECT_CLIMATE_ANOMALIES,
+        '{"filial_id": 1, "dias_analise": 30}',
+        session=seeded_session,
+    )
+    anom_data = json.loads(anom_json)
+    assert anom_data["total_anomalias_criticas"] == 1
+    assert len(anom_data["filiais"]) == 1
+    assert "serie_temporal" not in anom_data
+
+    aff_json = execute_agent_tool(
+        TOOL_ANALYZE_CONSULTANT_AFFINITY,
+        {"filial_id": 2},
+        session=seeded_session,
+    )
+    aff_data = json.loads(aff_json)
+    assert len(aff_data["consultores"]) == 2
+    assert aff_data["consultores"][0]["consultor_nome"] == "Helena Albuquerque"
+
+    reb_json = execute_agent_tool(
+        TOOL_RECOMMEND_STOCK_REBALANCING,
+        None,
+        session=seeded_session,
+    )
+    reb_data = json.loads(reb_json)
+    assert reb_data["total_transferencias_sugeridas"] == 2
+
+    # Whitespace-only or JSON "null" raw arguments must be treated as empty dicts
+    reb_ws = json.loads(
+        execute_agent_tool(TOOL_RECOMMEND_STOCK_REBALANCING, "   ", session=seeded_session)
+    )
+    assert reb_ws["total_transferencias_sugeridas"] == 2
+
+    reb_null = json.loads(
+        execute_agent_tool(TOOL_RECOMMEND_STOCK_REBALANCING, "null", session=seeded_session)
+    )
+    assert reb_null["total_transferencias_sugeridas"] == 2
+
+    # LLM sentinels for "all branches" (0, "", "null", "todas") normalize to filial_id=None
+    for sentinel in (0, "0", "", "null", "todas"):
+        anom_all = json.loads(
+            execute_agent_tool(
+                TOOL_DETECT_CLIMATE_ANOMALIES,
+                json.dumps({"filial_id": sentinel, "dias_analise": "15"}),
+                session=seeded_session,
+            )
+        )
+        assert len(anom_all["filiais"]) == 4
+        assert anom_all["dias_analise"] == 15
+
+        aff_all = json.loads(
+            execute_agent_tool(
+                TOOL_ANALYZE_CONSULTANT_AFFINITY,
+                {"filial_id": sentinel},
+                session=seeded_session,
+            )
+        )
+        assert len(aff_all["consultores"]) == 8
+
+    # Invalid tool name or invalid arguments must return structured JSON error without crashing
+    err_unknown = json.loads(
+        execute_agent_tool("non_existent_tool", "{}", session=seeded_session)
+    )
+    assert err_unknown["error"] is True
+
+    err_threshold = json.loads(
+        execute_agent_tool(
+            TOOL_RECOMMEND_STOCK_REBALANCING,
+            {"max_coverage_days": 20, "min_coverage_days": 30},
+            session=seeded_session,
+        )
+    )
+    assert err_threshold["error"] is True
+
+
+def test_agent_orchestrator_deterministic_fallback_and_openai_tool_loop(
+    seeded_session: Session,
+) -> None:
+    """Verify deterministic fallback routing and mocked OpenAI native tool calling loop."""
+    unconfigured_settings = Settings(LLM_API_KEY="")
+
+    # 1. Stock-focused prompt routes to recommend_stock_rebalancing
+    stock_resp = run_agent_chat(
+        message="Quais lotes de sementes estão com risco de encalhe e para onde transferir?",
+        session=seeded_session,
+        settings=unconfigured_settings,
+    )
+    assert stock_resp.tools_used == [TOOL_RECOMMEND_STOCK_REBALANCING]
+    assert "Filial Norte - Sinop" in stock_resp.reply
+    assert "Filial Sul - Dourados" in stock_resp.reply
+    assert "Helena Albuquerque" in stock_resp.reply
+
+    # 2. Climate-focused prompt routes to detect_climate_sales_anomalies
+    climate_resp = run_agent_chat(
+        message="Qual o impacto do atraso de chuva e anomalia climática nas vendas?",
+        session=seeded_session,
+        settings=unconfigured_settings,
+    )
+    assert climate_resp.tools_used == [TOOL_DETECT_CLIMATE_ANOMALIES]
+    assert "Z-score" in climate_resp.reply
+    assert "Proteinado" in climate_resp.reply
+
+    # 2b. Single-branch + custom window fallback (Filial Sul - Dourados, 15 dias)
+    sul_resp = run_agent_chat(
+        message="Como está a chuva e a margem dos consultores na Filial Sul nos últimos 15 dias?",
+        session=seeded_session,
+        settings=unconfigured_settings,
+    )
+    assert sul_resp.tools_used == [
+        TOOL_DETECT_CLIMATE_ANOMALIES,
+        TOOL_ANALYZE_CONSULTANT_AFFINITY,
+    ]
+    assert "Últimos 15 dias" in sul_resp.reply
+    assert "Regime Regular — Filial Sul - Dourados" in sul_resp.reply
+    assert "Helena Albuquerque" in sul_resp.reply
+    assert "Roberto Almeida" in sul_resp.reply
+    assert "Filial Norte - Sinop" not in sul_resp.reply
+
+    # 3. General prompt invokes all 3 tools
+    general_resp = run_agent_chat(
+        message="Me dê um panorama executivo completo da operação hoje.",
+        session=seeded_session,
+        settings=unconfigured_settings,
+    )
+    assert set(general_resp.tools_used) == {
+        TOOL_DETECT_CLIMATE_ANOMALIES,
+        TOOL_RECOMMEND_STOCK_REBALANCING,
+        TOOL_ANALYZE_CONSULTANT_AFFINITY,
+    }
+
+    # 4. Mocked OpenAI client exercising the multi-step tool calling loop
+    first_tool_call = SimpleNamespace(
+        id="call_stock_1",
+        function=SimpleNamespace(
+            name=TOOL_RECOMMEND_STOCK_REBALANCING,
+            arguments='{"max_coverage_days": 60, "min_coverage_days": 10}',
+        ),
+    )
+    first_completion = SimpleNamespace(
+        choices=[
+            SimpleNamespace(
+                message=SimpleNamespace(
+                    content="",
+                    tool_calls=[first_tool_call],
+                )
+            )
+        ]
+    )
+    second_completion = SimpleNamespace(
+        choices=[
+            SimpleNamespace(
+                message=SimpleNamespace(
+                    content=(
+                        "Recomendo transferir imediatamente os lotes de Sementes da Filial Norte "
+                        "para a Filial Sul sob gestão de Helena Albuquerque."
+                    ),
+                    tool_calls=None,
+                )
+            )
+        ]
+    )
+
+    mock_client = MagicMock()
+    mock_client.chat.completions.create.side_effect = [
+        first_completion,
+        second_completion,
+    ]
+    configured_settings = Settings(LLM_API_KEY="sk-live-test-key")
+
+    llm_resp = run_agent_chat(
+        message="Analise o estoque e recomende transferências.",
+        session=seeded_session,
+        settings=configured_settings,
+        openai_client=mock_client,
+    )
+    assert llm_resp.tools_used == [TOOL_RECOMMEND_STOCK_REBALANCING]
+    assert "Helena Albuquerque" in llm_resp.reply
+    assert mock_client.chat.completions.create.call_count == 2
+
+    # 5. OpenAIError gracefully falls back to deterministic synthesis
+    failing_client = MagicMock()
+    failing_client.chat.completions.create.side_effect = OpenAIError("Provider timeout")
+    fallback_on_error = run_agent_chat(
+        message="Compare a margem dos consultores especialistas vs commodity.",
+        session=seeded_session,
+        settings=configured_settings,
+        openai_client=failing_client,
+    )
+    assert fallback_on_error.tools_used == [TOOL_ANALYZE_CONSULTANT_AFFINITY]
+    assert "Especialista Técnico" in fallback_on_error.reply
+
+    # 6. Empty choices or tool-free LLM hallucination falls back deterministically
+    empty_choices_client = MagicMock()
+    empty_choices_client.chat.completions.create.return_value = SimpleNamespace(choices=[])
+    empty_choices_resp = run_agent_chat(
+        message="Quais os lotes em risco de cobertura de estoque?",
+        session=seeded_session,
+        settings=configured_settings,
+        openai_client=empty_choices_client,
+    )
+    assert empty_choices_resp.tools_used == [TOOL_RECOMMEND_STOCK_REBALANCING]
+    assert "Filial Norte - Sinop" in empty_choices_resp.reply
+
+    no_tool_client = MagicMock()
+    no_tool_client.chat.completions.create.return_value = SimpleNamespace(
+        choices=[
+            SimpleNamespace(
+                message=SimpleNamespace(
+                    content="Resposta inventada sem consultar tools.",
+                    tool_calls=None,
+                )
+            )
+        ]
+    )
+    no_tool_resp = run_agent_chat(
+        message="Quais os lotes em risco de cobertura de estoque?",
+        session=seeded_session,
+        settings=configured_settings,
+        openai_client=no_tool_client,
+    )
+    assert no_tool_resp.tools_used == [TOOL_RECOMMEND_STOCK_REBALANCING]
+    assert "Filial Norte - Sinop" in no_tool_resp.reply
+
+
+def test_fastapi_routes_and_rate_limiting(seeded_session: Session) -> None:
+    """Verify /api/health, /api/dashboard/overview, /api/agent/chat, and HTTP 429 rate limiting."""
+
+    def _override_get_db() -> Generator[Session, None, None]:
+        yield seeded_session
+
+    app.dependency_overrides[get_db] = _override_get_db
+    agent_rate_limiter.reset()
+
+    try:
+        client = TestClient(app)
+
+        # 1. GET /api/health
+        health_res = client.get("/api/health")
+        assert health_res.status_code == 200
+        health_body = health_res.json()
+        assert health_body["status"] == "ok"
+        assert health_body["database_seeded"] is True
+        assert health_body["records"]["filiais"] == 4
+        assert health_body["records"]["registro_vendas"] == 29200
+
+        # 2. GET /api/dashboard/overview
+        overview_res = client.get("/api/dashboard/overview")
+        assert overview_res.status_code == 200
+        overview_body = overview_res.json()
+        assert overview_body["anomalias_climaticas"]["total_anomalias_criticas"] == 1
+        assert len(overview_body["afinidade_consultores"]["consultores"]) == 8
+        assert overview_body["remanejamento_estoque"]["total_transferencias_sugeridas"] == 2
+
+        invalid_overview = client.get(
+            "/api/dashboard/overview?max_coverage_days=20&min_coverage_days=30"
+        )
+        assert invalid_overview.status_code == 422
+
+        # 3. POST /api/agent/chat
+        chat_res = client.post(
+            "/api/agent/chat",
+            json={
+                "message": (
+                    "Por que as vendas de sementes caíram na Filial Norte "
+                    "e qual o plano de estoque?"
+                )
+            },
+        )
+        assert chat_res.status_code == 200
+        chat_body = chat_res.json()
+        assert TOOL_DETECT_CLIMATE_ANOMALIES in chat_body["tools_used"]
+        assert TOOL_RECOMMEND_STOCK_REBALANCING in chat_body["tools_used"]
+        assert "Filial Norte - Sinop" in chat_body["reply"]
+
+        # Reject whitespace-only message
+        blank_res = client.post("/api/agent/chat", json={"message": "   "})
+        assert blank_res.status_code == 422
+
+        # 4. Rate Limiting (HTTP 429 after exceeding max_requests + stale bucket eviction)
+        custom_limiter = InMemoryRateLimiter(max_requests=2, window_seconds=3600)
+        for idx in range(260):
+            custom_limiter.check_request(f"198.51.100.{idx}", now=10.0)
+        assert len(custom_limiter._hits) == 260
+        # Advance past window (3600s); next check prunes all 260 expired IP buckets
+        custom_limiter.check_request("192.0.2.10", now=3700.0)
+        assert len(custom_limiter._hits) == 1
+        custom_limiter.check_request("192.0.2.10", now=3701.0)
+        with pytest.raises(Exception) as exc_info:
+            custom_limiter.check_request("192.0.2.10", now=3702.0)
+        assert getattr(exc_info.value, "status_code", None) == 429
+
+        # Also test HTTP 429 through the FastAPI endpoint itself
+        agent_rate_limiter.reset()
+        max_req = agent_rate_limiter.max_requests
+        for _ in range(max_req):
+            ok_resp = client.post(
+                "/api/agent/chat",
+                json={"message": "Status de chuva na Filial Norte"},
+                headers={"X-Forwarded-For": "203.0.113.55"},
+            )
+            assert ok_resp.status_code == 200
+
+        blocked_resp = client.post(
+            "/api/agent/chat",
+            json={"message": "Status de chuva na Filial Norte"},
+            headers={"X-Forwarded-For": "203.0.113.55"},
+        )
+        assert blocked_resp.status_code == 429
+        assert "Retry-After" in blocked_resp.headers
+
+        # Another IP is unaffected
+        other_ip_resp = client.post(
+            "/api/agent/chat",
+            json={"message": "Status de chuva na Filial Norte"},
+            headers={"X-Forwarded-For": "203.0.113.99"},
+        )
+        assert other_ip_resp.status_code == 200
+    finally:
+        app.dependency_overrides.clear()
+        agent_rate_limiter.reset()
+
+
 
