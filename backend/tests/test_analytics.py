@@ -362,7 +362,7 @@ def test_agent_orchestrator_deterministic_fallback_and_openai_tool_loop(
     seeded_session: Session,
 ) -> None:
     """Verify deterministic fallback routing and mocked OpenAI native tool calling loop."""
-    unconfigured_settings = Settings(LLM_API_KEY="")
+    unconfigured_settings = Settings(_env_file=None, LLM_API_KEY="")
 
     # 1. Stock-focused prompt routes to recommend_stock_rebalancing
     stock_resp = run_agent_chat(
@@ -450,7 +450,7 @@ def test_agent_orchestrator_deterministic_fallback_and_openai_tool_loop(
         first_completion,
         second_completion,
     ]
-    configured_settings = Settings(LLM_API_KEY="sk-live-test-key")
+    configured_settings = Settings(_env_file=None, LLM_API_KEY="dummy-unit-test-key")
 
     llm_resp = run_agent_chat(
         message="Analise o estoque e recomende transferências.",
@@ -507,8 +507,14 @@ def test_agent_orchestrator_deterministic_fallback_and_openai_tool_loop(
     assert "Filial Norte - Sinop" in no_tool_resp.reply
 
 
-def test_fastapi_routes_and_rate_limiting(seeded_session: Session) -> None:
+def test_fastapi_routes_and_rate_limiting(
+    seeded_session: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Verify /api/health, /api/dashboard/overview, /api/agent/chat, and HTTP 429 rate limiting."""
+    monkeypatch.setattr(
+        "app.agent.orchestrator.get_settings",
+        lambda: Settings(_env_file=None, LLM_API_KEY=""),
+    )
 
     def _override_get_db() -> Generator[Session, None, None]:
         yield seeded_session
