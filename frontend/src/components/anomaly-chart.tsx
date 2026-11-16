@@ -14,13 +14,6 @@ import {
   YAxis,
 } from "recharts";
 import {
-  AlertOctagon,
-  CloudRain,
-  Flame,
-  Sprout,
-  TrendingDown,
-} from "lucide-react";
-import {
   BranchClimateAnomaly,
   ClimateSalesAnomalyReport,
   formatNumberBR,
@@ -46,10 +39,10 @@ interface BranchTabItem {
 }
 
 const ALL_BRANCH_TABS: readonly BranchTabItem[] = [
-  { filial_id: 1, shortName: "Norte - Sinop" },
-  { filial_id: 2, shortName: "Sul - Dourados" },
-  { filial_id: 3, shortName: "Cerrado - Rio Verde" },
-  { filial_id: 4, shortName: "Pantanal - Corumbá" },
+  { filial_id: 1, shortName: "Norte · Sinop" },
+  { filial_id: 2, shortName: "Sul · Dourados" },
+  { filial_id: 3, shortName: "Cerrado · Rio Verde" },
+  { filial_id: 4, shortName: "Pantanal · Corumbá" },
 ];
 
 function formatShortDate(isoDate: string): string {
@@ -113,45 +106,45 @@ export function AnomalyChart({
 
   return (
     <section
-      aria-label="Correlação Precipitação versus Giro de Insumos e Diagnóstico Z-Score"
-      className="rounded-2xl border border-[#2a3f37] bg-[#1a2923] p-5 shadow-agro"
+      aria-label="Correlação precipitação versus giro de insumos"
+      className="rounded-xl border border-white/[0.08] bg-[#171b19] p-6"
     >
-      {/* Header & Branch Selector Pills */}
+      {/* Header & Branch Selector */}
       <div className="flex flex-col justify-between gap-4 border-b border-white/[0.06] pb-4 lg:flex-row lg:items-center">
         <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-lg font-semibold text-[#f0fdf4]">
-              Telemetria Pluviométrica (mm) vs. Giro de Sementes &amp; Nutrição
-              Seca
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="text-base font-medium text-[#eef2ef]">
+              Precipitação vs. giro de sementes e nutrição seca
             </h2>
             {activeBranch && (
-              <span
-                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-[11px] font-semibold ${
-                  activeBranch.severidade === "CRITICA"
-                    ? "bg-red-500/15 text-[#ef4444]"
-                    : activeBranch.severidade === "MODERADA"
-                    ? "bg-amber-500/15 text-[#f59e0b]"
-                    : "bg-emerald-500/15 text-[#22c55e]"
-                }`}
-              >
+              <span className="inline-flex items-center gap-1.5 font-mono text-xs text-[#9aa59e]">
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    activeBranch.severidade === "CRITICA"
+                      ? "bg-[#e5484d]"
+                      : activeBranch.severidade === "MODERADA"
+                      ? "bg-[#d99b26]"
+                      : "bg-[#4cc38a]"
+                  }`}
+                  aria-hidden="true"
+                />
                 {activeBranch.severidade === "CRITICA"
-                  ? "ESTIAGEM SEVERA DETECTADA"
+                  ? "Estiagem severa"
                   : activeBranch.severidade === "MODERADA"
-                  ? "ATENÇÃO CLIMÁTICA"
-                  : "REGIME PLUVIOMÉTRICO REGULAR"}
+                  ? "Atenção climática"
+                  : "Regime regular"}
               </span>
             )}
           </div>
-          <p className="mt-1 text-xs text-[#9cb8aa]">
-            Série diária comparando precipitação (mm) com a velocidade de saída
-            de Sementes de Pastagem e Proteinado de Seca (últimos{" "}
-            {report.dias_analise} dias).
+          <p className="mt-1 text-[13px] text-[#9aa59e]">
+            Série diária de chuva (mm) e saída de insumos nos últimos{" "}
+            {report.dias_analise} dias
           </p>
         </div>
 
         {/* Branch Selector Tabs */}
         <div
-          className="flex flex-wrap items-center gap-1.5"
+          className="inline-flex flex-wrap items-center gap-1 rounded-lg border border-white/[0.08] bg-[#111413] p-1"
           role="tablist"
           aria-label="Selecionar filial no gráfico climático"
         >
@@ -161,9 +154,7 @@ export function AnomalyChart({
             );
             const isSelected =
               (activeBranch?.filial_id ?? effectiveBranchId) === tab.filial_id;
-            const isCritical =
-              branchInReport?.severidade === "CRITICA" ||
-              (branchInReport === undefined && tab.filial_id === 1);
+            const isCritical = branchInReport?.severidade === "CRITICA";
             return (
               <button
                 key={tab.filial_id}
@@ -171,19 +162,17 @@ export function AnomalyChart({
                 role="tab"
                 aria-selected={isSelected}
                 onClick={() => handleBranchTabClick(tab.filial_id)}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                className={`inline-flex h-8 items-center gap-2 rounded-md px-3 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22c55e]/40 ${
                   isSelected
-                    ? "bg-[#22c55e] text-[#071a10] shadow-sm"
-                    : "border border-[#2a3f37] bg-[#121e19] text-[#9cb8aa] hover:bg-[#22362f] hover:text-[#f0fdf4]"
+                    ? "bg-[#1f2421] text-[#eef2ef] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                    : "text-[#9aa59e] hover:text-[#eef2ef]"
                 }`}
               >
                 <span>{tab.shortName}</span>
                 {isCritical && (
                   <span
-                    className={`h-2 w-2 rounded-full ${
-                      isSelected ? "bg-[#071a10]" : "bg-[#ef4444]"
-                    }`}
-                    title="Anomalia Climática Monitorada"
+                    className="h-1.5 w-1.5 rounded-full bg-[#e5484d]"
+                    title="Anomalia pluviométrica crítica"
                   />
                 )}
               </button>
@@ -192,16 +181,16 @@ export function AnomalyChart({
         </div>
       </div>
 
-      {/* Main Content Grid: Chart + Z-Score Diagnostic Panel */}
+      {/* Main Content Grid: Chart + Diagnostic Panel */}
       <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-12">
         {/* Left 8 cols: Recharts ComposedChart */}
         <div className="xl:col-span-8">
-          <div className="h-[340px] w-full rounded-xl border border-[#2a3f37]/70 bg-[#121e19] p-3">
+          <div className="h-[340px] w-full rounded-lg border border-white/[0.06] bg-[#111413] p-3">
             {chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart
                   data={chartData}
-                  margin={{ top: 12, right: 16, left: 0, bottom: 4 }}
+                  margin={{ top: 12, right: 8, left: 0, bottom: 4 }}
                 >
                   <defs>
                     <linearGradient
@@ -211,67 +200,67 @@ export function AnomalyChart({
                       x2="0"
                       y2="1"
                     >
-                      <stop offset="5%" stopColor="#22c55e" stopOpacity={0.35} />
+                      <stop offset="5%" stopColor="#22c55e" stopOpacity={0.22} />
                       <stop offset="95%" stopColor="#22c55e" stopOpacity={0.0} />
                     </linearGradient>
                     <linearGradient id="gradSeca" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.35} />
-                      <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
+                      <stop offset="5%" stopColor="#d99b26" stopOpacity={0.18} />
+                      <stop offset="95%" stopColor="#d99b26" stopOpacity={0.0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
-                    stroke="#2a3f37"
+                    stroke="rgba(238, 242, 239, 0.06)"
                     strokeDasharray="3 3"
                     vertical={false}
                   />
                   <XAxis
                     dataKey="dateLabel"
-                    stroke="#5d7d70"
-                    tick={{ fill: "#9cb8aa", fontSize: 11 }}
+                    stroke="#68736c"
+                    tick={{
+                      fill: "#68736c",
+                      fontSize: 11,
+                      fontFamily: "var(--font-mono), monospace",
+                    }}
                     tickLine={false}
-                    minTickGap={18}
+                    axisLine={false}
+                    minTickGap={20}
                   />
                   <YAxis
                     yAxisId="left"
-                    stroke="#5d7d70"
-                    tick={{ fill: "#9cb8aa", fontSize: 11 }}
+                    width={40}
+                    stroke="#68736c"
+                    tick={{
+                      fill: "#68736c",
+                      fontSize: 11,
+                      fontFamily: "var(--font-mono), monospace",
+                    }}
                     tickLine={false}
                     axisLine={false}
-                    label={{
-                      value: "Vendas (un/dia)",
-                      angle: -90,
-                      position: "insideLeft",
-                      fill: "#9cb8aa",
-                      fontSize: 11,
-                    }}
                   />
                   <YAxis
                     yAxisId="right"
                     orientation="right"
-                    stroke="#38bdf8"
-                    tick={{ fill: "#38bdf8", fontSize: 11 }}
+                    width={40}
+                    stroke="#68736c"
+                    tick={{
+                      fill: "#68736c",
+                      fontSize: 11,
+                      fontFamily: "var(--font-mono), monospace",
+                    }}
                     tickLine={false}
                     axisLine={false}
-                    label={{
-                      value: "Chuva (mm)",
-                      angle: 90,
-                      position: "insideRight",
-                      fill: "#38bdf8",
-                      fontSize: 11,
-                    }}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#121e19",
-                      borderColor: "#2a3f37",
-                      borderRadius: "12px",
-                      color: "#f0fdf4",
+                      backgroundColor: "#171b19",
+                      borderColor: "rgba(238, 242, 239, 0.1)",
+                      borderRadius: "8px",
+                      color: "#eef2ef",
                       fontSize: "12px",
-                      boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.7)",
                     }}
                     labelStyle={{
-                      color: "#f0fdf4",
-                      fontWeight: 600,
+                      color: "#eef2ef",
+                      fontWeight: 500,
                       marginBottom: "4px",
                     }}
                   />
@@ -279,7 +268,7 @@ export function AnomalyChart({
                     wrapperStyle={{
                       fontSize: "12px",
                       paddingTop: "8px",
-                      color: "#9cb8aa",
+                      color: "#9aa59e",
                     }}
                   />
                   {droughtBreakpointLabel &&
@@ -287,12 +276,12 @@ export function AnomalyChart({
                       <ReferenceLine
                         yAxisId="left"
                         x={droughtBreakpointLabel}
-                        stroke="#ef4444"
+                        stroke="#e5484d"
                         strokeDasharray="4 4"
                         label={{
-                          value: "Início Estiagem (-30d)",
+                          value: "Corte de chuva (-30d)",
                           position: "insideTopRight",
-                          fill: "#ef4444",
+                          fill: "#e5484d",
                           fontSize: 11,
                         }}
                       />
@@ -301,175 +290,152 @@ export function AnomalyChart({
                     yAxisId="right"
                     dataKey="precipitacao_mm"
                     name="Precipitação (mm)"
-                    fill="#38bdf8"
-                    fillOpacity={0.45}
-                    radius={[3, 3, 0, 0]}
-                    barSize={8}
+                    fill="#529cca"
+                    fillOpacity={0.35}
+                    radius={[2, 2, 0, 0]}
+                    barSize={6}
                   />
                   <Area
                     yAxisId="left"
                     type="monotone"
                     dataKey="vendas_sementes_qtd"
-                    name="Sementes de Pastagem (un)"
+                    name="Sementes de pastagem (un)"
                     stroke="#22c55e"
-                    strokeWidth={2.2}
+                    strokeWidth={2}
                     fill="url(#gradSementes)"
                   />
                   <Area
                     yAxisId="left"
                     type="monotone"
                     dataKey="vendas_nutricao_seca_qtd"
-                    name="Nutrição Seca / Proteinado (un)"
-                    stroke="#f59e0b"
-                    strokeWidth={2.2}
+                    name="Proteinado de seca (un)"
+                    stroke="#d99b26"
+                    strokeWidth={1.75}
                     fill="url(#gradSeca)"
                   />
                 </ComposedChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-full items-center justify-center text-sm text-[#9cb8aa]">
-                Sem dados temporais para a filial selecionada.
+              <div className="flex h-full items-center justify-center text-sm text-[#9aa59e]">
+                Sem dados temporais para a filial selecionada
               </div>
             )}
           </div>
         </div>
 
-        {/* Right 4 cols: Deterministic Z-Score Diagnostic Card */}
-        <div className="flex flex-col justify-between rounded-xl border border-[#2a3f37] bg-[#121e19] p-4 xl:col-span-4">
+        {/* Right 4 cols: Statistical Diagnostic Panel */}
+        <div className="flex flex-col justify-between rounded-lg border border-white/[0.06] bg-[#111413] p-4 xl:col-span-4">
           {activeBranch ? (
             <>
               <div>
-                <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+                <div className="flex items-baseline justify-between border-b border-white/[0.06] pb-3">
                   <div>
-                    <span className="font-mono text-[11px] uppercase tracking-wider text-[#5d7d70]">
-                      Diagnóstico Estatístico
-                    </span>
-                    <h3 className="text-base font-bold text-[#f0fdf4]">
+                    <p className="text-xs text-[#68736c]">
+                      Diagnóstico da unidade
+                    </p>
+                    <h3 className="mt-0.5 text-sm font-medium text-[#eef2ef]">
                       {activeBranch.filial_nome}
                     </h3>
                   </div>
-                  <span className="rounded-lg border border-[#2a3f37] bg-[#1a2923] px-2.5 py-1 font-mono text-xs font-semibold text-[#9cb8aa]">
+                  <span className="font-mono text-xs text-[#9aa59e]">
                     {activeBranch.microrregiao}
                   </span>
                 </div>
 
                 {/* Key Telemetry Metrics */}
                 <div className="mt-3 grid grid-cols-3 gap-2">
-                  <div className="rounded-lg border border-[#2a3f37]/60 bg-[#1a2923] p-2.5">
-                    <div className="flex items-center gap-1 text-[11px] text-[#38bdf8]">
-                      <CloudRain className="h-3.5 w-3.5" aria-hidden="true" />
-                      <span>Chuva ({activeBranch.dias_analise}d)</span>
-                    </div>
-                    <p className="mt-1 font-mono text-sm font-bold text-[#f0fdf4] tabular-nums">
+                  <div className="rounded-md border border-white/[0.06] bg-[#171b19] p-3">
+                    <p className="text-xs text-[#9aa59e]">
+                      Chuva ({activeBranch.dias_analise}d)
+                    </p>
+                    <p className="mt-1 font-mono text-sm font-medium text-[#eef2ef] tabular-nums">
                       {formatNumberBR(
                         activeBranch.precipitacao_media_periodo_mm,
-                        2
+                        1
                       )}{" "}
                       mm
                     </p>
-                    <span className="font-mono text-[10px] text-[#9cb8aa] tabular-nums">
+                    <span className="font-mono text-[11px] text-[#68736c] tabular-nums">
                       Z = {formatNumberBR(activeBranch.precipitacao_z_score, 2)}
                     </span>
                   </div>
 
-                  <div className="rounded-lg border border-[#2a3f37]/60 bg-[#1a2923] p-2.5">
-                    <div className="flex items-center gap-1 text-[11px] text-[#22c55e]">
-                      <Sprout className="h-3.5 w-3.5" aria-hidden="true" />
-                      <span>Sementes</span>
-                    </div>
+                  <div className="rounded-md border border-white/[0.06] bg-[#171b19] p-3">
+                    <p className="text-xs text-[#9aa59e]">Sementes</p>
                     <p
-                      className={`mt-1 font-mono text-sm font-bold tabular-nums ${
+                      className={`mt-1 font-mono text-sm font-medium tabular-nums ${
                         activeBranch.queda_sementes_pct < -25
-                          ? "text-[#ef4444]"
-                          : "text-[#f0fdf4]"
+                          ? "text-[#e5484d]"
+                          : "text-[#eef2ef]"
                       }`}
                     >
                       {activeBranch.queda_sementes_pct > 0 ? "+" : ""}
                       {formatNumberBR(activeBranch.queda_sementes_pct, 1)}%
                     </p>
-                    <span className="font-mono text-[10px] text-[#9cb8aa]">
-                      vs. histórico
+                    <span className="font-mono text-[11px] text-[#68736c]">
+                      vs média
                     </span>
                   </div>
 
-                  <div className="rounded-lg border border-[#2a3f37]/60 bg-[#1a2923] p-2.5">
-                    <div className="flex items-center gap-1 text-[11px] text-[#f59e0b]">
-                      <Flame className="h-3.5 w-3.5" aria-hidden="true" />
-                      <span>Prot. Seca</span>
-                    </div>
+                  <div className="rounded-md border border-white/[0.06] bg-[#171b19] p-3">
+                    <p className="text-xs text-[#9aa59e]">Prot. seca</p>
                     <p
-                      className={`mt-1 font-mono text-sm font-bold tabular-nums ${
+                      className={`mt-1 font-mono text-sm font-medium tabular-nums ${
                         activeBranch.alta_nutricao_seca_pct > 25
-                          ? "text-[#f59e0b]"
-                          : "text-[#f0fdf4]"
+                          ? "text-[#d99b26]"
+                          : "text-[#eef2ef]"
                       }`}
                     >
                       {activeBranch.alta_nutricao_seca_pct > 0 ? "+" : ""}
                       {formatNumberBR(activeBranch.alta_nutricao_seca_pct, 1)}%
                     </p>
-                    <span className="font-mono text-[10px] text-[#9cb8aa]">
-                      vs. histórico
+                    <span className="font-mono text-[11px] text-[#68736c]">
+                      vs média
                     </span>
                   </div>
                 </div>
 
                 {/* Narrative Diagnostic */}
-                <div className="mt-3 rounded-lg border border-[#2a3f37]/80 bg-[#16221d] p-3 text-xs leading-relaxed text-[#d8e6dd]">
-                  <div className="mb-1 flex items-center gap-1.5 font-semibold text-[#f0fdf4]">
-                    <AlertOctagon
-                      className={`h-3.5 w-3.5 ${
-                        activeBranch.severidade === "CRITICA"
-                          ? "text-[#ef4444]"
-                          : "text-[#22c55e]"
-                      }`}
-                      aria-hidden="true"
-                    />
-                    <span>Síntese Determinística</span>
-                  </div>
+                <p className="mt-3 text-xs leading-relaxed text-[#9aa59e]">
                   {activeBranch.diagnostico}
-                </div>
+                </p>
               </div>
 
               {/* Affected Products Breakdown */}
-              <div className="mt-3 border-t border-white/[0.06] pt-3">
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#9cb8aa]">
-                  Produtos Monitorados na Filial (Z-Score)
-                </p>
-                <div className="space-y-1.5">
+              <div className="mt-4 border-t border-white/[0.06] pt-3">
+                <div className="mb-2 flex items-center justify-between text-xs text-[#68736c]">
+                  <span>Variação por insumo</span>
+                  <span className="font-mono">Δ vendas / Z</span>
+                </div>
+                <div className="space-y-1">
                   {activeBranch.produtos_afetados.slice(0, 3).map((prod) => (
                     <div
                       key={prod.produto_id}
-                      className="flex items-center justify-between rounded-lg bg-[#1a2923] px-2.5 py-1.5 text-xs"
+                      className="flex items-center justify-between rounded-md bg-[#171b19] px-3 py-2 text-xs"
                     >
                       <div className="min-w-0 pr-2">
-                        <p className="truncate font-medium text-[#f0fdf4]">
+                        <p className="truncate font-normal text-[#eef2ef]">
                           {prod.produto_nome}
                         </p>
-                        <span className="text-[10px] text-[#9cb8aa]">
-                          {prod.categoria} · Corr:{" "}
+                        <span className="font-mono text-[11px] text-[#68736c] tabular-nums">
+                          {prod.categoria} · r ={" "}
                           {formatNumberBR(prod.correlacao_chuva_vendas, 2)}
                         </span>
                       </div>
                       <div className="text-right font-mono tabular-nums">
                         <span
-                          className={`inline-flex items-center gap-0.5 font-semibold ${
+                          className={`font-medium ${
                             prod.status_anomalia === "QUEDA_SEVERA"
-                              ? "text-[#ef4444]"
+                              ? "text-[#e5484d]"
                               : prod.status_anomalia === "ALTA_ATIPICA"
-                              ? "text-[#f59e0b]"
-                              : "text-[#22c55e]"
+                              ? "text-[#d99b26]"
+                              : "text-[#4cc38a]"
                           }`}
                         >
-                          {prod.variacao_vendas_pct < 0 && (
-                            <TrendingDown
-                              className="h-3 w-3"
-                              aria-hidden="true"
-                            />
-                          )}
                           {prod.variacao_vendas_pct > 0 ? "+" : ""}
                           {formatNumberBR(prod.variacao_vendas_pct, 1)}%
                         </span>
-                        <p className="text-[10px] text-[#9cb8aa]">
+                        <p className="text-[11px] text-[#68736c]">
                           Z = {formatNumberBR(prod.vendas_z_score, 2)}
                         </p>
                       </div>
@@ -479,8 +445,8 @@ export function AnomalyChart({
               </div>
             </>
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-[#9cb8aa]">
-              Selecione uma filial para inspecionar o diagnóstico.
+            <div className="flex h-full items-center justify-center text-sm text-[#9aa59e]">
+              Selecione uma filial para inspecionar o diagnóstico
             </div>
           )}
         </div>

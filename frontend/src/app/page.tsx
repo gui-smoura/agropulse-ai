@@ -5,16 +5,11 @@ import {
   Activity,
   AlertCircle,
   BarChart3,
-  Building2,
-  Calendar,
-  Cpu,
   Database,
   ExternalLink,
   RefreshCw,
-  ShieldCheck,
   Sprout,
   Truck,
-  Users,
 } from "lucide-react";
 import {
   DashboardOverviewResponse,
@@ -34,11 +29,11 @@ interface BranchOption {
 }
 
 const BRANCH_OPTIONS: readonly BranchOption[] = [
-  { id: null, label: "Todas as Filiais (Consolidado Rede)" },
-  { id: 1, label: "Filial Norte — Sinop (MT)" },
-  { id: 2, label: "Filial Sul — Dourados (MS)" },
-  { id: 3, label: "Filial Cerrado — Rio Verde (GO)" },
-  { id: 4, label: "Filial Pantanal — Corumbá (MS)" },
+  { id: null, label: "Todas as filiais (rede)" },
+  { id: 1, label: "Filial Norte · Sinop (MT)" },
+  { id: 2, label: "Filial Sul · Dourados (MS)" },
+  { id: 3, label: "Filial Cerrado · Rio Verde (GO)" },
+  { id: 4, label: "Filial Pantanal · Corumbá (MS)" },
 ];
 
 type NavSectionId = "overview" | "clima" | "remanejamento" | "telemetria";
@@ -99,142 +94,142 @@ export default function AgroPulseDashboardPage(): React.ReactElement {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0a1611] text-[#f0fdf4]">
-      {/* Persistent Left Rail Navigation (DESIGN.md Section 5) */}
+    <div className="flex min-h-screen bg-[#111413] text-[#eef2ef]">
+      {/* Persistent Left Rail Navigation */}
       <aside
-        aria-label="Navegação Executiva AgroPulse AI"
-        className="hidden w-64 shrink-0 flex-col justify-between border-r border-[#1f3029] bg-[#131f1a] lg:flex"
+        aria-label="Navegação principal AgroPulse AI"
+        className="hidden w-64 shrink-0 flex-col justify-between border-r border-white/[0.08] bg-[#0d0f0e] lg:flex"
       >
         <div>
-          {/* Brand Logo */}
-          <div className="flex h-16 items-center gap-3 border-b border-[#1f3029] px-5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#22c55e] text-[#071a10] shadow-sm">
-              <Sprout className="h-5 w-5" aria-hidden="true" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-base font-bold tracking-tight text-[#f0fdf4]">
-                  AgroPulse AI
-                </span>
-                <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#22c55e]">
-                  v0.1
-                </span>
-              </div>
-              <p className="text-[11px] text-[#9cb8aa]">
-                Inteligência Comercial &amp; Estoque
-              </p>
-            </div>
+          {/* Brand Wordmark */}
+          <div className="flex h-16 items-center gap-2.5 border-b border-white/[0.08] px-4">
+            <span className="flex w-4 shrink-0 items-center justify-center">
+              <Sprout
+                className="h-4 w-4 shrink-0 text-[#22c55e]"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
+            </span>
+            <span className="text-base font-medium text-[#eef2ef]">
+              AgroPulse AI
+            </span>
           </div>
 
           {/* Navigation Modules */}
-          <nav className="mt-4 space-y-1 px-3" aria-label="Módulos do Sistema">
-            <p className="px-3 pb-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-[#5d7d70]">
-              Cockpit de Decisão
-            </p>
-            <button
-              type="button"
-              onClick={() => scrollToSection("overview", "section-kpis")}
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-xs font-semibold transition-all ${
-                activeNav === "overview"
-                  ? "border-l-[3px] border-[#22c55e] bg-[#1a2923] text-[#f0fdf4]"
-                  : "text-[#9cb8aa] hover:bg-[#1a2923]/60 hover:text-[#f0fdf4]"
-              }`}
-            >
-              <BarChart3 className="h-4 w-4 text-[#22c55e]" aria-hidden="true" />
-              <span>Visão Geral &amp; Copiloto</span>
-            </button>
+          <nav className="px-2" aria-label="Módulos do sistema">
+            <p className="mt-6 mb-2 px-2 text-xs text-[#68736c]">Operações</p>
+            <div className="space-y-1">
+              <button
+                type="button"
+                onClick={() => scrollToSection("overview", "section-kpis")}
+                className={`flex h-9 w-full items-center gap-2.5 rounded-lg px-2 text-left text-sm transition-colors duration-150 ${
+                  activeNav === "overview"
+                    ? "bg-[#1f2421] font-medium text-[#eef2ef] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                    : "font-normal text-[#9aa59e] hover:bg-[#171b19] hover:text-[#eef2ef]"
+                }`}
+              >
+                <span className="flex w-4 shrink-0 items-center justify-center">
+                  <BarChart3
+                    className="h-4 w-4 text-current"
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />
+                </span>
+                <span className="truncate">Visão geral</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => scrollToSection("clima", "section-clima")}
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-xs font-semibold transition-all ${
-                activeNav === "clima"
-                  ? "border-l-[3px] border-[#22c55e] bg-[#1a2923] text-[#f0fdf4]"
-                  : "text-[#9cb8aa] hover:bg-[#1a2923]/60 hover:text-[#f0fdf4]"
-              }`}
-            >
-              <Activity className="h-4 w-4 text-[#38bdf8]" aria-hidden="true" />
-              <span>Anomalias &amp; Pluviometria</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => scrollToSection("clima", "section-clima")}
+                className={`flex h-9 w-full items-center gap-2.5 rounded-lg px-2 text-left text-sm transition-colors duration-150 ${
+                  activeNav === "clima"
+                    ? "bg-[#1f2421] font-medium text-[#eef2ef] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                    : "font-normal text-[#9aa59e] hover:bg-[#171b19] hover:text-[#eef2ef]"
+                }`}
+              >
+                <span className="flex w-4 shrink-0 items-center justify-center">
+                  <Activity
+                    className="h-4 w-4 text-current"
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />
+                </span>
+                <span className="truncate">Clima e giro</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() =>
-                scrollToSection("remanejamento", "section-remanejamento")
-              }
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-xs font-semibold transition-all ${
-                activeNav === "remanejamento"
-                  ? "border-l-[3px] border-[#22c55e] bg-[#1a2923] text-[#f0fdf4]"
-                  : "text-[#9cb8aa] hover:bg-[#1a2923]/60 hover:text-[#f0fdf4]"
-              }`}
-            >
-              <Truck className="h-4 w-4 text-[#f59e0b]" aria-hidden="true" />
-              <span>Remanejamento &amp; Afinidade</span>
-            </button>
+              <button
+                type="button"
+                onClick={() =>
+                  scrollToSection("remanejamento", "section-remanejamento")
+                }
+                className={`flex h-9 w-full items-center gap-2.5 rounded-lg px-2 text-left text-sm transition-colors duration-150 ${
+                  activeNav === "remanejamento"
+                    ? "bg-[#1f2421] font-medium text-[#eef2ef] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                    : "font-normal text-[#9aa59e] hover:bg-[#171b19] hover:text-[#eef2ef]"
+                }`}
+              >
+                <span className="flex w-4 shrink-0 items-center justify-center">
+                  <Truck
+                    className="h-4 w-4 text-current"
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />
+                </span>
+                <span className="truncate">Remanejamento</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() =>
-                scrollToSection("telemetria", "section-telemetria")
-              }
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-xs font-semibold transition-all ${
-                activeNav === "telemetria"
-                  ? "border-l-[3px] border-[#22c55e] bg-[#1a2923] text-[#f0fdf4]"
-                  : "text-[#9cb8aa] hover:bg-[#1a2923]/60 hover:text-[#f0fdf4]"
-              }`}
-            >
-              <ShieldCheck
-                className="h-4 w-4 text-[#22c55e]"
-                aria-hidden="true"
-              />
-              <span>Auditoria &amp; Telemetria</span>
-            </button>
-          </nav>
-
-          {/* Architectural Guardrails Card in Sidebar */}
-          <div className="mx-3 mt-6 rounded-xl border border-[#2a3f37] bg-[#16221d] p-3.5">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#f0fdf4]">
-              <Cpu className="h-4 w-4 text-[#22c55e]" aria-hidden="true" />
-              <span>Arquitetura Determinística</span>
+              <button
+                type="button"
+                onClick={() =>
+                  scrollToSection("telemetria", "section-telemetria")
+                }
+                className={`flex h-9 w-full items-center gap-2.5 rounded-lg px-2 text-left text-sm transition-colors duration-150 ${
+                  activeNav === "telemetria"
+                    ? "bg-[#1f2421] font-medium text-[#eef2ef] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                    : "font-normal text-[#9aa59e] hover:bg-[#171b19] hover:text-[#eef2ef]"
+                }`}
+              >
+                <span className="flex w-4 shrink-0 items-center justify-center">
+                  <Database
+                    className="h-4 w-4 text-current"
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />
+                </span>
+                <span className="truncate">Base e parâmetros</span>
+              </button>
             </div>
-            <p className="mt-1.5 text-[11px] leading-relaxed text-[#9cb8aa]">
-              O LLM jamais realiza cálculos matemáticos. Z-score, correlação e
-              cobertura em dias são processados em{" "}
-              <code className="font-mono text-[#4be277]">
-                analytics/engine.py
-              </code>{" "}
-              com validação Pydantic v2.
-            </p>
-          </div>
+          </nav>
         </div>
 
-        {/* Sidebar Footer: Engine Telemetry & OpenAPI Link */}
-        <div className="border-t border-[#1f3029] p-4 space-y-2.5">
+        {/* Sidebar Footer: Telemetry & OpenAPI Link */}
+        <div className="space-y-3 border-t border-white/[0.08] p-4">
           <div className="flex items-center justify-between text-xs">
-            <span className="flex items-center gap-1.5 text-[#9cb8aa]">
+            <span className="inline-flex items-center gap-2 text-[#9aa59e]">
               <span
-                className={`h-2 w-2 rounded-full ${
-                  health?.database_seeded ? "bg-[#22c55e]" : "bg-[#f59e0b]"
+                className={`h-1.5 w-1.5 rounded-full ${
+                  health?.database_seeded ? "bg-[#4cc38a]" : "bg-[#d99b26]"
                 }`}
+                aria-hidden="true"
               />
-              Engine FastAPI
+              Motor FastAPI
             </span>
-            <span className="font-mono text-[11px] font-semibold text-[#22c55e] tabular-nums">
-              {latencyMs}ms
+            <span className="font-mono text-xs text-[#68736c] tabular-nums">
+              {latencyMs} ms
             </span>
           </div>
 
           {health && (
-            <div className="rounded-lg bg-[#0d1612] px-2.5 py-2 font-mono text-[10px] text-[#9cb8aa] tabular-nums">
+            <div className="space-y-1 font-mono text-[11px] text-[#68736c] tabular-nums">
               <div className="flex justify-between">
-                <span>SQLite Auto-Seed:</span>
-                <span className="text-[#22c55e]">
-                  {health.database_seeded ? "ATIVO (730d)" : "PENDENTE"}
+                <span>Histórico SQLite</span>
+                <span className="text-[#9aa59e]">
+                  {health.database_seeded ? "730 dias" : "Pendente"}
                 </span>
               </div>
-              <div className="mt-0.5 flex justify-between">
-                <span>Registros Vendas:</span>
-                <span className="text-[#f0fdf4]">
+              <div className="flex justify-between">
+                <span>Registros de venda</span>
+                <span className="text-[#9aa59e]">
                   {(health.records.registro_vendas ?? 0).toLocaleString(
                     "pt-BR"
                   )}
@@ -247,62 +242,64 @@ export default function AgroPulseDashboardPage(): React.ReactElement {
             href={`${getApiBaseUrl()}/docs`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex w-full items-center justify-between rounded-lg border border-[#2a3f37] bg-[#1a2923] px-3 py-2 text-xs font-medium text-[#d8e6dd] transition-colors hover:border-[#22c55e]/50 hover:text-[#f0fdf4]"
+            className="flex h-8 w-full items-center justify-between rounded-lg border border-white/[0.08] bg-[#141816] px-3 text-xs text-[#9aa59e] transition-colors duration-150 hover:border-white/[0.16] hover:text-[#eef2ef]"
           >
-            <span>Contrato OpenAPI / Swagger</span>
-            <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+            <span>Contrato OpenAPI</span>
+            <ExternalLink
+              className="h-3.5 w-3.5 text-[#68736c]"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
           </a>
         </div>
       </aside>
 
       {/* Main Content Shell */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Executive Contextual Header (64px height, DESIGN.md Section 5.2) */}
-        <header className="sticky top-0 z-30 flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-[#1f3029] bg-[#0d1612]/90 px-4 py-2.5 backdrop-blur-md lg:px-6">
+        {/* Contextual Header (64px height) */}
+        <header className="sticky top-0 z-30 flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] bg-[#111413]/95 px-6 py-3 backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 lg:hidden">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#22c55e] text-[#071a10]">
-                <Sprout className="h-4 w-4" aria-hidden="true" />
-              </div>
-              <span className="font-bold text-[#f0fdf4]">AgroPulse AI</span>
+              <Sprout
+                className="h-4 w-4 text-[#22c55e]"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
+              <span className="font-medium text-[#eef2ef]">AgroPulse AI</span>
             </div>
             <div>
-              <h1 className="text-sm font-bold text-[#f0fdf4] sm:text-base">
-                Cockpit Executivo de Inteligência Comercial &amp; Logística de
-                Estoque
+              <h1 className="text-base font-medium text-[#eef2ef]">
+                Distribuição de insumos · Safra Centro-Oeste
               </h1>
-              <p className="hidden text-xs text-[#9cb8aa] sm:block">
-                Monitoramento Preditivo de Insumos: Sementes de Pastagem,
-                Nutrição Animal &amp; Defensivos
+              <p className="hidden text-xs text-[#9aa59e] sm:block">
+                Sementes de pastagem, nutrição animal e defensivos
               </p>
             </div>
           </div>
 
           {/* Operational Scope Controls */}
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Branch Filter Dropdown */}
-            <div className="flex items-center gap-1.5 rounded-xl border border-[#2a3f37] bg-[#131f1a] px-3 py-1.5">
-              <Building2
-                className="h-3.5 w-3.5 text-[#22c55e]"
-                aria-hidden="true"
-              />
+            <div className="flex h-9 items-center rounded-lg border border-white/[0.08] bg-[#171b19] px-3">
               <label htmlFor="branch-scope-select" className="sr-only">
-                Filtrar por Filial
+                Filtrar por filial
               </label>
               <select
                 id="branch-scope-select"
-                value={selectedFilialId === null ? "all" : String(selectedFilialId)}
+                value={
+                  selectedFilialId === null ? "all" : String(selectedFilialId)
+                }
                 onChange={(e) => {
                   const val = e.target.value;
                   setSelectedFilialId(val === "all" ? null : Number(val));
                 }}
-                className="bg-transparent text-xs font-semibold text-[#f0fdf4] focus:outline-none"
+                className="bg-transparent text-xs font-medium text-[#eef2ef] focus:outline-none"
               >
                 {BRANCH_OPTIONS.map((opt) => (
                   <option
                     key={opt.id === null ? "all" : opt.id}
                     value={opt.id === null ? "all" : String(opt.id)}
-                    className="bg-[#131f1a] text-[#f0fdf4]"
+                    className="bg-[#171b19] text-[#eef2ef]"
                   >
                     {opt.label}
                   </option>
@@ -311,28 +308,24 @@ export default function AgroPulseDashboardPage(): React.ReactElement {
             </div>
 
             {/* Analysis Window Selector */}
-            <div className="flex items-center gap-1.5 rounded-xl border border-[#2a3f37] bg-[#131f1a] px-3 py-1.5">
-              <Calendar
-                className="h-3.5 w-3.5 text-[#38bdf8]"
-                aria-hidden="true"
-              />
+            <div className="flex h-9 items-center rounded-lg border border-white/[0.08] bg-[#171b19] px-3">
               <label htmlFor="window-days-select" className="sr-only">
-                Janela de Análise Climática
+                Janela de análise climática
               </label>
               <select
                 id="window-days-select"
                 value={String(diasAnalise)}
                 onChange={(e) => setDiasAnalise(Number(e.target.value))}
-                className="bg-transparent text-xs font-semibold text-[#f0fdf4] focus:outline-none"
+                className="bg-transparent text-xs font-medium text-[#eef2ef] focus:outline-none"
               >
-                <option value="15" className="bg-[#131f1a] text-[#f0fdf4]">
-                  Janela: 15 dias
+                <option value="15" className="bg-[#171b19] text-[#eef2ef]">
+                  Últimos 15 dias
                 </option>
-                <option value="30" className="bg-[#131f1a] text-[#f0fdf4]">
-                  Janela: 30 dias (Safra)
+                <option value="30" className="bg-[#171b19] text-[#eef2ef]">
+                  Últimos 30 dias
                 </option>
-                <option value="60" className="bg-[#131f1a] text-[#f0fdf4]">
-                  Janela: 60 dias
+                <option value="60" className="bg-[#171b19] text-[#eef2ef]">
+                  Últimos 60 dias
                 </option>
               </select>
             </div>
@@ -342,45 +335,47 @@ export default function AgroPulseDashboardPage(): React.ReactElement {
               type="button"
               onClick={() => void loadDashboardData()}
               disabled={isLoading}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[#2a3f37] bg-[#1a2923] px-3 py-1.5 text-xs font-semibold text-[#f0fdf4] transition-colors hover:bg-[#22362f] disabled:opacity-50"
-              title="Recarregar telemetria determinística"
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/[0.08] bg-[#171b19] px-3 text-xs font-medium text-[#eef2ef] transition-colors duration-150 hover:bg-[#1f2421] disabled:opacity-50"
+              title="Atualizar dados"
             >
               <RefreshCw
-                className={`h-3.5 w-3.5 text-[#22c55e] ${
+                className={`h-4 w-4 text-[#9aa59e] ${
                   isLoading ? "animate-spin" : ""
                 }`}
+                strokeWidth={1.5}
                 aria-hidden="true"
               />
-              <span className="hidden sm:inline">Sincronizar</span>
+              <span className="hidden sm:inline">Atualizar</span>
             </button>
           </div>
         </header>
 
         {/* Main Workspace Body */}
-        <main className="flex-1 p-4 lg:p-6">
+        <main className="mx-auto w-full max-w-[1600px] flex-1 p-6">
           {errorMsg && (
             <div
               role="alert"
-              className="mb-6 flex items-center justify-between rounded-2xl border border-red-500/40 bg-red-950/30 p-4 text-xs text-[#ffb4ab]"
+              className="mb-6 flex items-center justify-between rounded-xl border border-[#e5484d]/30 bg-[#e5484d]/10 p-4 text-xs text-[#e5484d]"
             >
               <div className="flex items-center gap-2.5">
                 <AlertCircle
-                  className="h-5 w-5 shrink-0 text-[#ef4444]"
+                  className="h-4 w-4 shrink-0 text-[#e5484d]"
+                  strokeWidth={1.5}
                   aria-hidden="true"
                 />
                 <div>
-                  <p className="font-bold text-[#f0fdf4]">
-                    Erro de Comunicação com a Engine FastAPI
+                  <p className="font-medium text-[#eef2ef]">
+                    Falha na comunicação com o servidor FastAPI
                   </p>
-                  <p className="mt-0.5">{errorMsg}</p>
+                  <p className="mt-0.5 text-[#9aa59e]">{errorMsg}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => void loadDashboardData()}
-                className="rounded-lg bg-[#ef4444] px-3 py-1.5 font-semibold text-[#071a10] hover:bg-red-400"
+                className="inline-flex h-8 items-center rounded-lg bg-[#eef2ef] px-3 font-medium text-[#0d0f0e] transition-colors duration-150 hover:bg-white"
               >
-                Tentar Novamente
+                Tentar novamente
               </button>
             </div>
           )}
@@ -391,18 +386,18 @@ export default function AgroPulseDashboardPage(): React.ReactElement {
                 {[1, 2, 3, 4].map((n) => (
                   <div
                     key={n}
-                    className="h-36 animate-pulse rounded-2xl border border-[#2a3f37] bg-[#1a2923]"
+                    className="h-36 rounded-xl border border-white/[0.08] bg-[#171b19]"
                   />
                 ))}
               </div>
               <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-                <div className="h-[520px] animate-pulse rounded-2xl border border-[#2a3f37] bg-[#1a2923] xl:col-span-8" />
-                <div className="h-[520px] animate-pulse rounded-2xl border border-[#2a3f37] bg-[#1a2923] xl:col-span-4" />
+                <div className="h-[520px] rounded-xl border border-white/[0.08] bg-[#171b19] xl:col-span-8" />
+                <div className="h-[520px] rounded-xl border border-white/[0.08] bg-[#171b19] xl:col-span-4" />
               </div>
             </div>
           ) : overview ? (
             <div className="space-y-6">
-              {/* Top Section: Executive KPI Cards */}
+              {/* Top Section: KPI Cards */}
               <div id="section-kpis">
                 <KpiCards
                   anomalias={overview.anomalias_climaticas}
@@ -412,7 +407,7 @@ export default function AgroPulseDashboardPage(): React.ReactElement {
                 />
               </div>
 
-              {/* Center & Right Split: Analytics Workspace (8 cols) + Agent Copilot Drawer (4 cols) */}
+              {/* Center & Right Split: Analytics Workspace (8 cols) + Copilot (4 cols) */}
               <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
                 {/* Center Left 8 Columns: Charts + Rebalance/Affinity Tables */}
                 <div className="space-y-6 xl:col-span-8">
@@ -444,76 +439,61 @@ export default function AgroPulseDashboardPage(): React.ReactElement {
                     />
                   </div>
 
-                  {/* Bottom Telemetry & Architecture Audit Strip (SCREEN_5 in DESIGN.md) */}
+                  {/* Bottom Telemetry & Parameters Strip */}
                   <section
                     id="section-telemetria"
-                    aria-label="Telemetria e Governança Agêntica"
-                    className="rounded-2xl border border-[#2a3f37] bg-[#121e19] p-5"
+                    aria-label="Parâmetros do motor e base histórica"
+                    className="rounded-xl border border-white/[0.08] bg-[#171b19] p-6"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] pb-3">
-                      <div className="flex items-center gap-2">
-                        <Database
-                          className="h-4 w-4 text-[#22c55e]"
-                          aria-hidden="true"
-                        />
-                        <h2 className="text-sm font-bold text-[#f0fdf4]">
-                          Auditoria &amp; Telemetria da Arquitetura (Clean Code
-                          Guardrails)
-                        </h2>
-                      </div>
-                      <span className="font-mono text-[11px] text-[#22c55e]">
-                        Rate Limit IP: 15 req/hora · SQLite Auto-Seed Lifespan
+                      <h2 className="text-sm font-medium text-[#eef2ef]">
+                        Parâmetros do motor e base histórica
+                      </h2>
+                      <span className="font-mono text-xs text-[#68736c] tabular-nums">
+                        Limite: 15 req/h por IP · SQLite local
                       </span>
                     </div>
 
-                    <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3 text-xs">
-                      <div className="rounded-xl border border-[#2a3f37] bg-[#1a2923] p-3">
-                        <p className="font-mono text-[10px] uppercase text-[#9cb8aa]">
-                          1. Motor Determinístico
+                    <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3 text-xs">
+                      <div className="rounded-lg border border-white/[0.06] bg-[#111413] p-4">
+                        <p className="text-[#68736c]">Cálculo estatístico</p>
+                        <p className="mt-1 font-medium text-[#eef2ef]">
+                          Z-score e cobertura em dias
                         </p>
-                        <p className="mt-1 font-semibold text-[#f0fdf4]">
-                          Z-Score &amp; Cobertura Puras
-                        </p>
-                        <p className="mt-1 text-[11px] text-[#9cb8aa]">
-                          Cálculos executados em Pandas/NumPy/SQLAlchemy sem
-                          interferência probabilística.
+                        <p className="mt-1 leading-relaxed text-[#9aa59e]">
+                          Desvio pluviométrico, correlação e giro diário
+                          processados em Python/Pandas com validação Pydantic
                         </p>
                       </div>
 
-                      <div className="rounded-xl border border-[#2a3f37] bg-[#1a2923] p-3">
-                        <p className="font-mono text-[10px] uppercase text-[#9cb8aa]">
-                          2. Orquestrador Agêntico
+                      <div className="rounded-lg border border-white/[0.06] bg-[#111413] p-4">
+                        <p className="text-[#68736c]">
+                          Orquestração de ferramentas
                         </p>
-                        <p className="mt-1 font-semibold text-[#f0fdf4]">
-                          OpenAI SDK Native Tools
+                        <p className="mt-1 font-medium text-[#eef2ef]">
+                          OpenAI SDK Function Calling
                         </p>
-                        <p className="mt-1 text-[11px] text-[#9cb8aa]">
-                          Compatível com Groq, Gemini e LM Studio sem LangChain
-                          ou CrewAI.
+                        <p className="mt-1 leading-relaxed text-[#9aa59e]">
+                          Respostas baseadas exclusivamente no retorno das
+                          funções analíticas registradas no backend
                         </p>
                       </div>
 
-                      <div className="rounded-xl border border-[#2a3f37] bg-[#1a2923] p-3">
-                        <div className="flex items-center justify-between">
-                          <p className="font-mono text-[10px] uppercase text-[#9cb8aa]">
-                            3. Banco Sintético (730 dias)
-                          </p>
-                          <Users
-                            className="h-3.5 w-3.5 text-[#22c55e]"
-                            aria-hidden="true"
-                          />
-                        </div>
-                        <p className="mt-1 font-semibold text-[#f0fdf4] tabular-nums">
+                      <div className="rounded-lg border border-white/[0.06] bg-[#111413] p-4">
+                        <p className="text-[#68736c]">
+                          Base operacional (730 dias)
+                        </p>
+                        <p className="mt-1 font-mono font-medium text-[#eef2ef] tabular-nums">
                           {health
                             ? `${(
                                 health.records.posicao_estoque_clima ?? 0
-                              ).toLocaleString("pt-BR")} snapshots climáticos`
-                            : "SQLite Ativo"}
+                              ).toLocaleString("pt-BR")} registros climáticos`
+                            : "SQLite ativo"}
                         </p>
-                        <p className="mt-1 text-[11px] text-[#9cb8aa] tabular-nums">
+                        <p className="mt-1 text-[#9aa59e] tabular-nums">
                           {health?.records.filiais ?? 4} filiais ·{" "}
                           {health?.records.consultores ?? 8} consultores ·{" "}
-                          {health?.records.produtos ?? 5} insumos estratégicos.
+                          {health?.records.produtos ?? 5} insumos monitorados
                         </p>
                       </div>
                     </div>

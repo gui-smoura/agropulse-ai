@@ -1,15 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Bot,
-  Loader2,
-  Send,
-  Sparkles,
-  Terminal,
-  User,
-  Zap,
-} from "lucide-react";
+import { ArrowUp, Loader2 } from "lucide-react";
 import { ApiClientError, sendAgentChatMessage } from "@/lib/api";
 
 export interface ChatTurn {
@@ -35,19 +27,19 @@ interface QuickPromptOption {
 const QUICK_PROMPTS: readonly QuickPromptOption[] = [
   {
     id: "prompt-clima",
-    label: "🌧️ Diagnóstico Estiagem (Filial Norte)",
+    label: "Impacto da estiagem na Filial Norte",
     prompt:
       "Qual o impacto do atraso de chuva nos últimos 30 dias na Filial Norte sobre as vendas de Sementes e Proteinado de Seca?",
   },
   {
     id: "prompt-estoque",
-    label: "🚚 Plano de Remanejamento (Norte → Sul)",
+    label: "Plano de transferência de estoque (> 60d)",
     prompt:
       "Quais lotes estão com cobertura crítica (> 60 dias) em risco de perder janela de plantio e para qual filial e consultor devemos transferir?",
   },
   {
     id: "prompt-afinidade",
-    label: "🏆 Afinidade Técnica vs. Commodity",
+    label: "Margem de especialistas vs. commodity",
     prompt:
       "Compare a margem e conversão dos Especialistas Técnicos em Sementes/Defensivos contra os consultores de Volume/Commodity.",
   },
@@ -61,42 +53,104 @@ function getTimeLabel(): string {
   });
 }
 
+function renderInlineMarkdown(text: string): React.ReactNode[] {
+  const tokenRegex = /(\*\*[^*]+\*\*|`[^`]+`|\*[^*\s][^*]*\*)/g;
+  const parts = text.split(tokenRegex);
+
+  return parts.map((part, idx) => {
+    if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
+      return (
+        <strong key={idx} className="font-medium text-[#eef2ef]">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
+      return (
+        <code
+          key={idx}
+          className="rounded bg-[#171b19] px-1 py-0.5 font-mono text-[11px] text-[#eef2ef]"
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
+      return (
+        <span key={idx} className="text-[#eef2ef]">
+          {part.slice(1, -1)}
+        </span>
+      );
+    }
+    return <React.Fragment key={idx}>{part}</React.Fragment>;
+  });
+}
+
 function renderFormattedLine(line: string, index: number): React.ReactElement {
   const trimmed = line.trim();
-  if (trimmed.startsWith("### ")) {
-    return (
-      <h4
-        key={index}
-        className="mt-2 text-sm font-bold tracking-tight text-[#4be277]"
-      >
-        {trimmed.replace("### ", "")}
-      </h4>
-    );
-  }
   if (trimmed.startsWith("#### ")) {
     return (
       <h5
         key={index}
-        className="mt-2.5 border-b border-white/[0.06] pb-1 text-xs font-bold uppercase tracking-wider text-[#f0fdf4]"
+        className="mt-2 border-b border-white/[0.06] pb-1 text-xs font-medium text-[#eef2ef]"
       >
-        {trimmed.replace("#### ", "")}
+        {renderInlineMarkdown(trimmed.slice(5))}
       </h5>
     );
   }
+  if (
+    trimmed.startsWith("### ") ||
+    trimmed.startsWith("## ") ||
+    trimmed.startsWith("# ")
+  ) {
+    const headingText = trimmed.replace(/^#{1,3}\s+/, "");
+    return (
+      <h4
+        key={index}
+        className="mt-1.5 text-[13px] font-medium text-[#eef2ef]"
+      >
+        {renderInlineMarkdown(headingText)}
+      </h4>
+    );
+  }
 
-  const segments = line.split(/(\*\*[^*]+\*\*)/g);
+  const nestedBulletMatch = /^\s{2,}[-*•]\s+(.*)$/.exec(line);
+  if (nestedBulletMatch && nestedBulletMatch[1] !== undefined) {
+    return (
+      <div
+        key={index}
+        className="flex items-baseline gap-2 pl-4 text-xs leading-relaxed text-[#9aa59e]"
+      >
+        <span className="font-mono text-[11px] text-[#68736c]" aria-hidden="true">
+          ·
+        </span>
+        <p className="min-w-0 flex-1">
+          {renderInlineMarkdown(nestedBulletMatch[1])}
+        </p>
+      </div>
+    );
+  }
+
+  const topBulletMatch = /^[-*•]\s+(.*)$/.exec(trimmed);
+  if (topBulletMatch && topBulletMatch[1] !== undefined) {
+    return (
+      <div
+        key={index}
+        className="flex items-baseline gap-2 text-xs leading-relaxed text-[#9aa59e]"
+      >
+        <span className="font-mono text-[11px] text-[#68736c]" aria-hidden="true">
+          –
+        </span>
+        <p className="min-w-0 flex-1">
+          {renderInlineMarkdown(topBulletMatch[1])}
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <p key={index} className="text-xs leading-relaxed text-[#d8e6dd]">
-      {segments.map((seg, segIdx) => {
-        if (seg.startsWith("**") && seg.endsWith("**")) {
-          return (
-            <strong key={segIdx} className="font-semibold text-[#f0fdf4]">
-              {seg.slice(2, -2)}
-            </strong>
-          );
-        }
-        return <React.Fragment key={segIdx}>{seg}</React.Fragment>;
-      })}
+    <p key={index} className="text-xs leading-relaxed text-[#9aa59e]">
+      {renderInlineMarkdown(trimmed)}
     </p>
   );
 }
@@ -110,7 +164,7 @@ export function AgentCopilot({
       id: "welcome-turn",
       role: "assistant",
       content:
-        "### Copiloto Executivo AgroPulse AI Pronto\nEstou conectado ao motor determinístico SQLite/FastAPI. Selecione um dos **3 prompts rápidos** abaixo ou envie uma pergunta para auditar anomalias climáticas (Z-score), remanejamento de estoque entre filiais ou afinidade de consultores sem alucinação matemática.",
+        "Selecione uma consulta acima ou digite uma pergunta para cruzar dados de precipitação, cobertura de estoque em dias e margem por consultor.",
       toolsUsed: [],
       timestamp: "Agora",
     },
@@ -156,10 +210,10 @@ export function AgentCopilot({
       setMessages((prev) => [...prev, assistantTurn]);
     } catch (err: unknown) {
       let errorMsg =
-        "Não foi possível conectar ao orquestrador FastAPI. Verifique se o backend está em execução.";
+        "Não foi possível conectar ao servidor FastAPI. Verifique se o backend está em execução.";
       if (err instanceof ApiClientError) {
         if (err.status === 429) {
-          errorMsg = `Limite de proteção da Demo atingido (HTTP 429): ${err.message}`;
+          errorMsg = `Limite de requisições atingido (HTTP 429): ${err.message}`;
         } else {
           errorMsg = `Erro da API (${err.status}): ${err.message}`;
         }
@@ -197,38 +251,27 @@ export function AgentCopilot({
 
   return (
     <aside
-      aria-label="Copiloto Agêntico AgroPulse AI"
-      className="flex h-full flex-col rounded-2xl border border-[#2a3f37] bg-[#121e19] shadow-drawer"
+      aria-label="Copiloto analítico AgroPulse AI"
+      className="flex h-full flex-col rounded-xl border border-white/[0.08] bg-[#171b19]"
     >
       {/* Copilot Header */}
-      <div className="flex items-center justify-between border-b border-[#2a3f37] bg-[#16221d] px-4 py-3.5 rounded-t-2xl">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/15 text-[#22c55e] border border-emerald-500/30">
-            <Bot className="h-5 w-5" aria-hidden="true" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-sm font-bold text-[#f0fdf4]">
-                Copiloto Agêntico
-              </h2>
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 font-mono text-[10px] font-semibold text-[#22c55e]">
-                <Sparkles className="h-2.5 w-2.5" aria-hidden="true" />
-                Tool Calling
-              </span>
-            </div>
-            <p className="text-[11px] text-[#9cb8aa]">
-              OpenAI SDK · Validação Pydantic · Zero Math Hallucination
-            </p>
-          </div>
+      <div className="border-b border-white/[0.06] px-4 py-3">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-sm font-medium text-[#eef2ef]">
+            Copiloto analítico
+          </h2>
+          <span className="font-mono text-[11px] text-[#68736c]">
+            Consultas SQLite
+          </span>
         </div>
+        <p className="mt-0.5 text-xs text-[#9aa59e]">
+          Análise de clima, cobertura de estoque e carteira comercial
+        </p>
       </div>
 
-      {/* 3 One-Click Quick Prompts for Evaluators */}
-      <div className="border-b border-[#2a3f37] bg-[#121e19] px-4 py-3">
-        <p className="mb-2 flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-[#9cb8aa]">
-          <Terminal className="h-3 w-3 text-[#22c55e]" aria-hidden="true" />
-          <span>Prompts Rápidos de Auditoria (1-Clique)</span>
-        </p>
+      {/* Quick Prompts */}
+      <div className="border-b border-white/[0.06] bg-[#141816] px-4 py-3">
+        <p className="mb-2 text-xs text-[#68736c]">Consultas sugeridas</p>
         <div className="flex flex-col gap-1.5">
           {QUICK_PROMPTS.map((item) => (
             <button
@@ -236,11 +279,11 @@ export function AgentCopilot({
               type="button"
               disabled={isLoading}
               onClick={() => void executePrompt(item.prompt)}
-              className="group flex w-full items-center justify-between rounded-xl border border-[#2a3f37] bg-[#1a2923] px-3 py-2 text-left text-xs font-medium text-[#d8e6dd] transition-all hover:border-[#22c55e]/60 hover:bg-[#22362f] hover:text-[#f0fdf4] disabled:cursor-not-allowed disabled:opacity-50"
+              className="group flex h-8 w-full items-center justify-between rounded-lg border border-white/[0.06] bg-[#171b19] px-3 text-left text-xs text-[#9aa59e] transition-colors duration-150 hover:border-white/[0.14] hover:bg-[#1f2421] hover:text-[#eef2ef] disabled:cursor-not-allowed disabled:opacity-50"
             >
               <span className="truncate">{item.label}</span>
-              <span className="ml-2 shrink-0 font-mono text-[10px] text-[#22c55e] opacity-80 group-hover:opacity-100">
-                Testar →
+              <span className="ml-2 shrink-0 font-mono text-[11px] text-[#68736c] group-hover:text-[#9aa59e]">
+                →
               </span>
             </button>
           ))}
@@ -250,41 +293,32 @@ export function AgentCopilot({
       {/* Conversation Messages Stream */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 space-y-3.5 overflow-y-auto p-4 max-h-[520px] min-h-[340px]"
+        className="max-h-[520px] min-h-[340px] flex-1 space-y-3 overflow-y-auto p-4"
         aria-live="polite"
       >
         {messages.map((turn) => (
           <div
             key={turn.id}
-            className={`flex flex-col gap-1.5 ${
+            className={`flex flex-col gap-1 ${
               turn.role === "user" ? "items-end" : "items-start"
             }`}
           >
-            <div className="flex items-center gap-1.5 px-1 text-[10px] text-[#5d7d70]">
-              {turn.role === "user" ? (
-                <>
-                  <span>Diretoria Executiva</span>
-                  <User className="h-3 w-3 text-[#9cb8aa]" aria-hidden="true" />
-                </>
-              ) : (
-                <>
-                  <Bot className="h-3 w-3 text-[#22c55e]" aria-hidden="true" />
-                  <span>AgroPulse AI</span>
-                </>
-              )}
+            <div className="flex items-center gap-1.5 px-1 font-mono text-[11px] text-[#68736c]">
+              <span>
+                {turn.role === "user" ? "Operador" : "AgroPulse"}
+              </span>
               <span>· {turn.timestamp}</span>
             </div>
 
-            {/* Tool Calling Badges */}
+            {/* Quiet Mono Tool Indicators */}
             {turn.toolsUsed.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5 px-1">
                 {turn.toolsUsed.map((toolName, toolIdx) => (
                   <span
                     key={`${toolName}-${toolIdx}`}
-                    className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-[#4be277]"
+                    className="font-mono text-[11px] text-[#4cc38a]"
                   >
-                    <Zap className="h-3 w-3 shrink-0" aria-hidden="true" />
-                    <span>⚡ Acionou: {toolName}</span>
+                    fn: {toolName}
                   </span>
                 ))}
               </div>
@@ -292,12 +326,12 @@ export function AgentCopilot({
 
             {/* Message Bubble */}
             <div
-              className={`w-full rounded-2xl p-3.5 ${
+              className={`w-full rounded-lg p-3 ${
                 turn.role === "user"
-                  ? "max-w-[90%] border border-emerald-500/30 bg-[#22362f] text-xs text-[#f0fdf4]"
+                  ? "max-w-[90%] border border-white/[0.1] bg-[#1f2421] text-xs text-[#eef2ef]"
                   : turn.isError
-                  ? "border border-red-500/40 bg-red-950/30 text-xs text-[#ffb4ab]"
-                  : "border border-[#2a3f37] bg-[#1a2923] space-y-1.5"
+                  ? "border border-[#e5484d]/30 bg-[#e5484d]/10 text-xs text-[#e5484d]"
+                  : "border border-white/[0.06] bg-[#111413] space-y-1.5"
               }`}
             >
               {turn.role === "user" ? (
@@ -313,14 +347,13 @@ export function AgentCopilot({
         ))}
 
         {isLoading && (
-          <div className="flex items-center gap-2 rounded-xl border border-[#2a3f37] bg-[#1a2923] px-3.5 py-2.5 text-xs text-[#9cb8aa]">
+          <div className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-[#111413] px-3 py-2 text-xs text-[#9aa59e]">
             <Loader2
-              className="h-4 w-4 animate-spin text-[#22c55e]"
+              className="h-4 w-4 animate-spin text-[#68736c]"
+              strokeWidth={1.5}
               aria-hidden="true"
             />
-            <span>
-              Executando Tool Calling nas funções determinísticas do motor...
-            </span>
+            <span>Consultando base analítica...</span>
           </div>
         )}
       </div>
@@ -328,11 +361,11 @@ export function AgentCopilot({
       {/* Input Footer */}
       <form
         onSubmit={handleFormSubmit}
-        className="border-t border-[#2a3f37] bg-[#16221d] p-3 rounded-b-2xl"
+        className="border-t border-white/[0.06] p-3"
       >
         <div className="flex items-center gap-2">
           <label htmlFor="copilot-chat-input" className="sr-only">
-            Pergunte ao Copiloto Agêntico
+            Perguntar ao copiloto
           </label>
           <input
             id="copilot-chat-input"
@@ -340,15 +373,19 @@ export function AgentCopilot({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             disabled={isLoading}
-            placeholder="Ex: Qual filial precisa receber lote de Sementes?"
-            className="h-10 flex-1 rounded-xl border border-[#2a3f37] bg-[#121e19] px-3.5 text-xs text-[#f0fdf4] placeholder-[#5d7d70] focus:border-[#22c55e] focus:outline-none focus:ring-2 focus:ring-[#22c55e]/20 disabled:opacity-50"
+            placeholder="Perguntar sobre estoque ou filiais"
+            className="h-9 flex-1 rounded-lg border border-white/[0.08] bg-[#111413] px-3 text-xs text-[#eef2ef] placeholder-[#68736c] focus:border-[#22c55e] focus:outline-none disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={isLoading || inputValue.trim().length === 0}
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#22c55e] px-3.5 text-xs font-semibold text-[#071a10] transition-all hover:bg-[#16a34a] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#eef2ef] px-3 text-xs font-medium text-[#0d0f0e] transition-[background-color,transform,opacity] duration-150 hover:bg-white active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <Send className="h-3.5 w-3.5" aria-hidden="true" />
+            <ArrowUp
+              className="h-4 w-4"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
             <span>Enviar</span>
           </button>
         </div>

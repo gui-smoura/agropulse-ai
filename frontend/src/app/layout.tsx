@@ -5,21 +5,21 @@ import "./globals.css";
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-jakarta",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "AgroPulse AI — Copiloto Agêntico de Inteligência Comercial e Estoque",
+  title: "AgroPulse AI — Operações e Estoque de Insumos",
   description:
-    "Plataforma executiva de inteligência comercial, correlação agroclimática (Z-score), afinidade de consultores e remanejamento preditivo de estoque para distribuidoras de insumos agropecuários.",
+    "Painel de controle comercial, correlação agroclimática, afinidade de consultores e remanejamento de estoque para distribuidoras de insumos agropecuários.",
 };
 
 export default function RootLayout({
@@ -32,7 +32,7 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} dark`}
     >
-      <body className="min-h-screen bg-[#0a1611] font-sans text-[#f0fdf4] selection:bg-[#22c55e]/30 selection:text-[#f0fdf4]">
+      <body className="min-h-screen bg-[#111413] font-sans text-[#eef2ef] selection:bg-[#22c55e]/25 selection:text-[#eef2ef]">
         {children}
       </body>
     </html>

@@ -1,15 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  ArrowRight,
-  Award,
-  CheckCircle2,
-  PackageCheck,
-  ShieldAlert,
-  Truck,
-  UserCheck,
-} from "lucide-react";
+import { Check } from "lucide-react";
 import {
   ConsultantAffinityReport,
   StockRebalancingReport,
@@ -64,47 +56,41 @@ export function RebalanceTable({
 
   return (
     <section
-      aria-label="Matriz de Remanejamento de Estoque e Afinidade Comercial"
-      className="rounded-2xl border border-[#2a3f37] bg-[#1a2923] p-5 shadow-agro"
+      aria-label="Matriz de remanejamento de estoque e afinidade comercial"
+      className="rounded-xl border border-white/[0.08] bg-[#171b19] p-6"
     >
       {/* Header & View Switcher */}
       <div className="flex flex-col justify-between gap-4 border-b border-white/[0.06] pb-4 md:flex-row md:items-center">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold text-[#f0fdf4]">
-              Matriz Logística de Remanejamento &amp; Afinidade de Consultores
-            </h2>
-            <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-[#22c55e]">
-              Engine Determinística
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-[#9cb8aa]">
-            Transferência de lotes travados (Cobertura &gt;{" "}
-            {remanejamento.max_coverage_days}d) para filiais em janela ativa
-            (Cobertura &lt; {remanejamento.min_coverage_days}d) vinculada ao
-            consultor campeão de conversão.
+          <h2 className="text-base font-medium text-[#eef2ef]">
+            Remanejamento de estoque e afinidade de consultores
+          </h2>
+          <p className="mt-1 text-[13px] text-[#9aa59e]">
+            Transferência de lotes acima de {remanejamento.max_coverage_days}d
+            para unidades com menos de {remanejamento.min_coverage_days}d de
+            cobertura
           </p>
         </div>
 
         <div
-          className="inline-flex rounded-xl border border-[#2a3f37] bg-[#121e19] p-1"
+          className="inline-flex rounded-lg border border-white/[0.08] bg-[#111413] p-1"
           role="tablist"
-          aria-label="Alternar entre Remanejamento de Estoque e Afinidade de Consultores"
+          aria-label="Alternar entre remanejamento de estoque e afinidade de consultores"
         >
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === "remanejamento"}
             onClick={() => setActiveTab("remanejamento")}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+            className={`inline-flex h-8 items-center gap-2 rounded-md px-3 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22c55e]/40 ${
               activeTab === "remanejamento"
-                ? "bg-[#22c55e] text-[#071a10]"
-                : "text-[#9cb8aa] hover:text-[#f0fdf4]"
+                ? "bg-[#1f2421] text-[#eef2ef] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                : "text-[#9aa59e] hover:text-[#eef2ef]"
             }`}
           >
-            <Truck className="h-3.5 w-3.5" aria-hidden="true" />
-            <span>
-              Remanejamento ({visibleRecomendacoes.length})
+            <span>Remanejamento</span>
+            <span className="font-mono text-[11px] text-[#68736c] tabular-nums">
+              {visibleRecomendacoes.length}
             </span>
           </button>
           <button
@@ -112,15 +98,15 @@ export function RebalanceTable({
             role="tab"
             aria-selected={activeTab === "afinidade"}
             onClick={() => setActiveTab("afinidade")}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+            className={`inline-flex h-8 items-center gap-2 rounded-md px-3 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22c55e]/40 ${
               activeTab === "afinidade"
-                ? "bg-[#22c55e] text-[#071a10]"
-                : "text-[#9cb8aa] hover:text-[#f0fdf4]"
+                ? "bg-[#1f2421] text-[#eef2ef] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                : "text-[#9aa59e] hover:text-[#eef2ef]"
             }`}
           >
-            <Award className="h-3.5 w-3.5" aria-hidden="true" />
-            <span>
-              Afinidade Consultores ({afinidade.consultores.length})
+            <span>Consultores</span>
+            <span className="font-mono text-[11px] text-[#68736c] tabular-nums">
+              {afinidade.consultores.length}
             </span>
           </button>
         </div>
@@ -133,74 +119,73 @@ export function RebalanceTable({
             tabIndex={0}
             role="region"
             aria-labelledby="rebalance-table-caption"
-            className="responsive-table-wrapper overflow-x-auto rounded-xl border border-[#2a3f37]"
+            className="responsive-table-wrapper overflow-x-auto rounded-lg border border-white/[0.06]"
           >
             <table className="w-full border-separate border-spacing-0 text-left text-xs">
               <caption id="rebalance-table-caption" className="sr-only">
                 Recomendações de transferência de estoque entre filiais com
                 cobertura em dias, valor financeiro e consultor recomendado
               </caption>
-              <thead className="sticky top-0 z-10 bg-[#121e19] text-[11px] font-semibold uppercase tracking-[0.04em] text-[#9cb8aa]">
+              <thead className="sticky top-0 z-10 bg-[#111413] text-xs font-medium text-[#9aa59e]">
                 <tr>
                   <th
                     scope="col"
-                    className="sticky left-0 z-20 border-b border-[#2a3f37] bg-[#121e19] px-4 py-3"
+                    className="sticky left-0 z-20 border-b border-white/[0.08] bg-[#111413] px-4 py-3 font-medium"
                   >
-                    Produto &amp; Janela
+                    Insumo e janela
                   </th>
                   <th
                     scope="col"
-                    className="border-b border-[#2a3f37] px-4 py-3"
+                    className="border-b border-white/[0.08] px-4 py-3 font-medium"
                   >
-                    Fluxo (Origem → Destino)
+                    Origem → destino
                   </th>
                   <th
                     scope="col"
-                    className="border-b border-[#2a3f37] px-4 py-3"
+                    className="border-b border-white/[0.08] px-4 py-3 font-medium"
                   >
-                    Cobertura (Antes → Pós)
+                    Cobertura (antes → após)
                   </th>
                   <th
                     scope="col"
-                    className="border-b border-[#2a3f37] px-4 py-3 text-right"
+                    className="border-b border-white/[0.08] px-4 py-3 text-right font-medium"
                   >
-                    Lote &amp; Valor Financeiro
+                    Lote e valor
                   </th>
                   <th
                     scope="col"
-                    className="border-b border-[#2a3f37] px-4 py-3"
+                    className="border-b border-white/[0.08] px-4 py-3 font-medium"
                   >
-                    Consultor Recomendado (Destino)
+                    Consultor no destino
                   </th>
                   <th
                     scope="col"
-                    className="border-b border-[#2a3f37] px-4 py-3 text-right"
+                    className="border-b border-white/[0.08] px-4 py-3 text-right font-medium"
                   >
-                    Decisão Executiva
+                    Ação
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.05] bg-[#1a2923]">
+              <tbody className="divide-y divide-white/[0.05] bg-[#171b19]">
                 {visibleRecomendacoes.length === 0 ? (
                   <tr>
                     <td
                       colSpan={6}
-                      className="px-4 py-6 text-center text-xs text-[#9cb8aa]"
+                      className="px-4 py-6 text-center text-xs text-[#9aa59e]"
                     >
                       <div className="flex flex-col items-center justify-center gap-2">
                         <p>
-                          A filial selecionada opera com cobertura de estoque
-                          equilibrada (entre {remanejamento.min_coverage_days}d e{" "}
-                          {remanejamento.max_coverage_days}d) sem necessidade de
-                          transferência imediata.
+                          A filial selecionada opera com cobertura equilibrada
+                          (entre {remanejamento.min_coverage_days}d e{" "}
+                          {remanejamento.max_coverage_days}d)
                         </p>
                         {onResetFilialFilter && (
                           <button
                             type="button"
                             onClick={onResetFilialFilter}
-                            className="rounded-lg border border-[#2a3f37] bg-[#121e19] px-3 py-1.5 text-xs font-semibold text-[#22c55e] transition-colors hover:bg-[#22362f]"
+                            className="inline-flex h-8 items-center rounded-md border border-white/[0.08] bg-[#1f2421] px-3 text-xs font-medium text-[#eef2ef] transition-colors duration-150 hover:border-white/[0.16]"
                           >
-                            Ver Todas as Filiais da Rede →
+                            Mostrar todas as filiais
                           </button>
                         )}
                       </div>
@@ -214,237 +199,217 @@ export function RebalanceTable({
                     return (
                       <tr
                         key={rowKey}
-                        className="group transition-colors hover:bg-[#22362f]"
+                        className="group transition-colors duration-150 hover:bg-[#1f2421]"
                       >
                         <th
                           scope="row"
-                          className="sticky left-0 z-10 bg-[#1a2923] px-4 py-3.5 font-semibold text-[#f0fdf4] transition-colors group-hover:bg-[#22362f]"
+                          className="sticky left-0 z-10 bg-[#171b19] px-4 py-3 font-normal text-[#eef2ef] transition-colors duration-150 group-hover:bg-[#1f2421]"
                         >
-                        <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-[#f0fdf4]">
-                            {rec.produto_nome}
-                          </span>
-                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                            <span className="rounded bg-[#121e19] px-1.5 py-0.5 font-mono text-[10px] text-[#9cb8aa]">
-                              {rec.categoria}
+                          <div className="flex flex-col">
+                            <span className="text-[13px] font-medium text-[#eef2ef]">
+                              {rec.produto_nome}
                             </span>
-                            {rec.risco_perda_janela_plantio && (
-                              <span className="inline-flex items-center gap-1 rounded bg-red-500/15 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#ef4444]">
-                                <ShieldAlert
-                                  className="h-3 w-3"
-                                  aria-hidden="true"
-                                />
-                                Janela {rec.janela_ideal_dias}d
+                            <div className="mt-1 flex flex-wrap items-center gap-2 font-mono text-[11px] text-[#68736c]">
+                              <span>{rec.categoria}</span>
+                              {rec.risco_perda_janela_plantio && (
+                                <span className="inline-flex items-center gap-1 text-[#e5484d]">
+                                  <span
+                                    className="h-1.5 w-1.5 rounded-full bg-[#e5484d]"
+                                    aria-hidden="true"
+                                  />
+                                  Janela {rec.janela_ideal_dias}d
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </th>
+
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2 text-[13px]">
+                            <span className="text-[#9aa59e]">
+                              {rec.filial_origem_nome.replace("Filial ", "")}
+                            </span>
+                            <span className="font-mono text-[#68736c]">→</span>
+                            <span className="font-medium text-[#eef2ef]">
+                              {rec.filial_destino_nome.replace("Filial ", "")}
+                            </span>
+                          </div>
+                          <div className="mt-1 font-mono text-[11px] text-[#68736c] tabular-nums">
+                            Disp.{" "}
+                            {formatNumberBR(
+                              rec.estoque_origem_disponivel_qtd,
+                              0
+                            )}{" "}
+                            un · Chuva destino{" "}
+                            {formatNumberBR(
+                              rec.precipitacao_destino_30d_mm,
+                              1
+                            )}{" "}
+                            mm/d
+                          </div>
+                        </td>
+
+                        <td className="px-4 py-3 font-mono tabular-nums">
+                          <div className="space-y-1 text-xs">
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-14 text-[#68736c]">
+                                Origem
                               </span>
-                            )}
-                          </div>
-                        </div>
-                      </th>
-
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-2">
-                          <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-2.5 py-1">
-                            <p className="font-semibold text-[#f0fdf4]">
-                              {rec.filial_origem_nome}
-                            </p>
-                            <span className="font-mono text-[10px] text-[#ef4444] tabular-nums">
-                              Estoque:{" "}
-                              {formatNumberBR(
-                                rec.estoque_origem_disponivel_qtd,
-                                0
-                              )}{" "}
-                              un
-                            </span>
-                          </div>
-                          <ArrowRight
-                            className="h-4 w-4 shrink-0 text-[#22c55e]"
-                            aria-hidden="true"
-                          />
-                          <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1">
-                            <p className="font-semibold text-[#f0fdf4]">
-                              {rec.filial_destino_nome}
-                            </p>
-                            <span className="font-mono text-[10px] text-[#38bdf8] tabular-nums">
-                              Chuva:{" "}
-                              {formatNumberBR(
-                                rec.precipitacao_destino_30d_mm,
-                                1
-                              )}{" "}
-                              mm/d
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3.5 font-mono tabular-nums">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] text-[#9cb8aa]">
-                              Origem:
-                            </span>
-                            <span className="font-bold text-[#ef4444]">
-                              {formatNumberBR(
-                                rec.cobertura_origem_atual_dias,
-                                1
-                              )}
-                              d
-                            </span>
-                            <span className="text-[#5d7d70]">→</span>
-                            <span className="font-semibold text-[#22c55e]">
-                              {formatNumberBR(
-                                rec.cobertura_origem_pos_transferencia_dias,
-                                1
-                              )}
-                              d
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] text-[#9cb8aa]">
-                              Destino:
-                            </span>
-                            <span className="font-bold text-[#f59e0b]">
-                              {formatNumberBR(
-                                rec.cobertura_destino_atual_dias,
-                                1
-                              )}
-                              d
-                            </span>
-                            <span className="text-[#5d7d70]">→</span>
-                            <span className="font-semibold text-[#22c55e]">
-                              {formatNumberBR(
-                                rec.cobertura_destino_pos_transferencia_dias,
-                                1
-                              )}
-                              d
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3.5 text-right font-mono tabular-nums">
-                        <p className="text-sm font-bold text-[#f0fdf4]">
-                          {formatCurrencyBRL(rec.valor_financeiro_lote_reais)}
-                        </p>
-                        <span className="text-[11px] font-semibold text-[#22c55e]">
-                          {formatNumberBR(rec.quantidade_sugerida, 0)} un. (
-                          {formatCurrencyBRL(rec.preco_unitario)}/un)
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-start gap-2">
-                          <UserCheck
-                            className="mt-0.5 h-4 w-4 shrink-0 text-[#22c55e]"
-                            aria-hidden="true"
-                          />
-                          <div>
-                            <p className="font-semibold text-[#f0fdf4]">
-                              {rec.consultor_recomendado_nome}
-                            </p>
-                            <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                              <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-[#22c55e]">
-                                {rec.consultor_recomendado_perfil}
+                              <span className="text-[#e5484d]">
+                                {formatNumberBR(
+                                  rec.cobertura_origem_atual_dias,
+                                  1
+                                )}
+                                d
                               </span>
-                              <span className="font-mono text-[11px] text-[#9cb8aa] tabular-nums">
-                                Margem:{" "}
-                                <strong className="text-[#f0fdf4]">
-                                  {formatNumberBR(
-                                    rec.consultor_margem_media_produto_pct,
-                                    1
-                                  )}
-                                  %
-                                </strong>
+                              <span className="text-[#68736c]">→</span>
+                              <span className="text-[#eef2ef]">
+                                {formatNumberBR(
+                                  rec.cobertura_origem_pos_transferencia_dias,
+                                  1
+                                )}
+                                d
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-14 text-[#68736c]">
+                                Destino
+                              </span>
+                              <span className="text-[#d99b26]">
+                                {formatNumberBR(
+                                  rec.cobertura_destino_atual_dias,
+                                  1
+                                )}
+                                d
+                              </span>
+                              <span className="text-[#68736c]">→</span>
+                              <span className="text-[#4cc38a]">
+                                {formatNumberBR(
+                                  rec.cobertura_destino_pos_transferencia_dias,
+                                  1
+                                )}
+                                d
                               </span>
                             </div>
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      <td className="px-4 py-3.5 text-right">
-                        <div className="flex flex-col items-end gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => toggleApprove(rowKey)}
-                            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all active:scale-95 ${
-                              isApproved
-                                ? "border border-emerald-500/40 bg-emerald-500/20 text-[#4be277]"
-                                : "bg-[#22c55e] text-[#071a10] hover:bg-[#16a34a]"
-                            }`}
-                          >
-                            {isApproved ? (
-                              <>
-                                <CheckCircle2
-                                  className="h-3.5 w-3.5"
-                                  aria-hidden="true"
-                                />
-                                <span>Ordem Emitida</span>
-                              </>
-                            ) : (
-                              <>
-                                <PackageCheck
-                                  className="h-3.5 w-3.5"
-                                  aria-hidden="true"
-                                />
-                                <span>Autorizar Lote</span>
-                              </>
-                            )}
-                          </button>
-                          {onSimulatePrompt && (
+                        <td className="px-4 py-3 text-right font-mono tabular-nums">
+                          <p className="text-[13px] font-medium text-[#eef2ef]">
+                            {formatCurrencyBRL(rec.valor_financeiro_lote_reais)}
+                          </p>
+                          <span className="text-[11px] text-[#9aa59e]">
+                            {formatNumberBR(rec.quantidade_sugerida, 0)} un ·{" "}
+                            {formatCurrencyBRL(rec.preco_unitario)}/un
+                          </span>
+                        </td>
+
+                        <td className="px-4 py-3">
+                          <p className="text-[13px] font-medium text-[#eef2ef]">
+                            {rec.consultor_recomendado_nome}
+                          </p>
+                          <div className="mt-1 font-mono text-[11px] text-[#9aa59e] tabular-nums">
+                            {rec.consultor_recomendado_perfil} · Margem{" "}
+                            <span className="text-[#eef2ef]">
+                              {formatNumberBR(
+                                rec.consultor_margem_media_produto_pct,
+                                1
+                              )}
+                              %
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex flex-col items-end gap-1.5">
                             <button
                               type="button"
-                              onClick={() =>
-                                onSimulatePrompt(
-                                  `Detalhe o remanejamento de ${rec.produto_nome} da ${rec.filial_origem_nome} para a ${rec.filial_destino_nome} e por que ${rec.consultor_recomendado_nome} foi selecionado.`
-                                )
-                              }
-                              className="text-[11px] font-medium text-[#9cb8aa] underline-offset-2 hover:text-[#f0fdf4] hover:underline"
+                              onClick={() => toggleApprove(rowKey)}
+                              className={`inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98] ${
+                                isApproved
+                                  ? "border border-white/[0.12] bg-[#1f2421] text-[#4cc38a]"
+                                  : "bg-[#22c55e] text-[#0d0f0e] hover:bg-[#16a34a]"
+                              }`}
                             >
-                              Auditar no Copiloto →
+                              {isApproved ? (
+                                <>
+                                  <Check
+                                    className="h-3.5 w-3.5"
+                                    strokeWidth={1.5}
+                                    aria-hidden="true"
+                                  />
+                                  <span>Ordem emitida</span>
+                                </>
+                              ) : (
+                                <span>Autorizar lote</span>
+                              )}
                             </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
+                            {onSimulatePrompt && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  onSimulatePrompt(
+                                    `Detalhe o remanejamento de ${rec.produto_nome} da ${rec.filial_origem_nome} para a ${rec.filial_destino_nome} e por que ${rec.consultor_recomendado_nome} foi selecionado.`
+                                  )
+                                }
+                                className="text-[11px] text-[#68736c] transition-colors duration-150 hover:text-[#eef2ef]"
+                              >
+                                Auditar no copiloto
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
           </div>
 
           {/* Snapshot of Stock Coverages */}
-          <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {visibleCobertura.map((item) => (
               <div
                 key={`${item.filial_id}-${item.produto_id}`}
-                className="flex items-center justify-between rounded-xl border border-[#2a3f37] bg-[#121e19] px-3.5 py-2.5 text-xs"
+                className="flex items-center justify-between rounded-lg border border-white/[0.06] bg-[#111413] px-4 py-3 text-xs"
               >
                 <div className="min-w-0 pr-2">
-                  <p className="truncate font-semibold text-[#f0fdf4]">
+                  <p className="truncate font-medium text-[#eef2ef]">
                     {item.filial_nome.replace("Filial ", "")}
                   </p>
-                  <p className="truncate text-[11px] text-[#9cb8aa]">
+                  <p className="truncate text-[11px] text-[#9aa59e]">
                     {item.produto_nome}
                   </p>
                 </div>
                 <div className="text-right font-mono tabular-nums">
                   <span
-                    className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                    className={`inline-flex items-center gap-1.5 text-xs font-medium ${
                       item.status_cobertura === "EXCESSO_CRITICO"
-                        ? "bg-red-500/15 text-[#ef4444]"
+                        ? "text-[#e5484d]"
                         : item.status_cobertura === "RUPTURA_IMINENTE"
-                        ? "bg-amber-500/15 text-[#f59e0b]"
-                        : "bg-emerald-500/15 text-[#22c55e]"
+                        ? "text-[#d99b26]"
+                        : "text-[#4cc38a]"
                     }`}
                   >
-                    {formatNumberBR(item.cobertura_atual_dias, 1)} dias
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        item.status_cobertura === "EXCESSO_CRITICO"
+                          ? "bg-[#e5484d]"
+                          : item.status_cobertura === "RUPTURA_IMINENTE"
+                          ? "bg-[#d99b26]"
+                          : "bg-[#4cc38a]"
+                      }`}
+                      aria-hidden="true"
+                    />
+                    {formatNumberBR(item.cobertura_atual_dias, 1)}d
                   </span>
-                  <p className="mt-0.5 text-[10px] text-[#5d7d70]">
+                  <p className="mt-0.5 text-[11px] text-[#68736c]">
                     {item.status_cobertura === "EXCESSO_CRITICO"
-                      ? "Excesso Crítico"
+                      ? "Excesso crítico"
                       : item.status_cobertura === "RUPTURA_IMINENTE"
-                      ? "Ruptura Iminente"
-                      : "Cobertura Regular"}
+                      ? "Ruptura iminente"
+                      : "Cobertura regular"}
                   </p>
                 </div>
               </div>
@@ -460,94 +425,98 @@ export function RebalanceTable({
             tabIndex={0}
             role="region"
             aria-labelledby="affinity-table-caption"
-            className="responsive-table-wrapper overflow-x-auto rounded-xl border border-[#2a3f37]"
+            className="responsive-table-wrapper overflow-x-auto rounded-lg border border-white/[0.06]"
           >
             <table className="w-full border-separate border-spacing-0 text-left text-xs">
               <caption id="affinity-table-caption" className="sr-only">
                 Performance e afinidade de consultores por perfil técnico vs
                 volume commodity
               </caption>
-              <thead className="sticky top-0 z-10 bg-[#121e19] text-[11px] font-semibold uppercase tracking-[0.04em] text-[#9cb8aa]">
+              <thead className="sticky top-0 z-10 bg-[#111413] text-xs font-medium text-[#9aa59e]">
                 <tr>
                   <th
                     scope="col"
-                    className="sticky left-0 z-20 border-b border-[#2a3f37] bg-[#121e19] px-4 py-3"
+                    className="sticky left-0 z-20 border-b border-white/[0.08] bg-[#111413] px-4 py-3 font-medium"
                   >
-                    Consultor &amp; Filial
+                    Consultor e filial
                   </th>
                   <th
                     scope="col"
-                    className="border-b border-[#2a3f37] px-4 py-3"
+                    className="border-b border-white/[0.08] px-4 py-3 font-medium"
                   >
-                    Perfil de Foco
+                    Perfil comercial
                   </th>
                   <th
                     scope="col"
-                    className="border-b border-[#2a3f37] px-4 py-3 text-right"
+                    className="border-b border-white/[0.08] px-4 py-3 text-right font-medium"
                   >
-                    Margem Linhas Técnicas
+                    Margem linhas técnicas
                   </th>
                   <th
                     scope="col"
-                    className="border-b border-[#2a3f37] px-4 py-3 text-right"
+                    className="border-b border-white/[0.08] px-4 py-3 text-right font-medium"
                   >
-                    Vantagem vs. Commodity
+                    Diferencial vs commodity
                   </th>
                   <th
                     scope="col"
-                    className="border-b border-[#2a3f37] px-4 py-3 text-right"
+                    className="border-b border-white/[0.08] px-4 py-3 text-right font-medium"
                   >
-                    Receita Linhas Técnicas
+                    Receita técnica
                   </th>
                   <th
                     scope="col"
-                    className="border-b border-[#2a3f37] px-4 py-3"
+                    className="border-b border-white/[0.08] px-4 py-3 font-medium"
                   >
-                    Especialidade Principal
+                    Especialidade
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.05] bg-[#1a2923]">
+              <tbody className="divide-y divide-white/[0.05] bg-[#171b19]">
                 {afinidade.consultores.map((cons) => {
                   const isSpecialist =
                     cons.perfil_foco === "Especialista Técnico";
                   return (
                     <tr
                       key={cons.consultor_id}
-                      className="group transition-colors hover:bg-[#22362f]"
+                      className="group transition-colors duration-150 hover:bg-[#1f2421]"
                     >
                       <th
                         scope="row"
-                        className="sticky left-0 z-10 bg-[#1a2923] px-4 py-3 font-semibold text-[#f0fdf4] transition-colors group-hover:bg-[#22362f]"
+                        className="sticky left-0 z-10 bg-[#171b19] px-4 py-3 font-normal text-[#eef2ef] transition-colors duration-150 group-hover:bg-[#1f2421]"
                       >
-                        <p className="text-sm font-semibold text-[#f0fdf4]">
+                        <p className="text-[13px] font-medium text-[#eef2ef]">
                           {cons.consultor_nome}
                         </p>
-                        <span className="text-[11px] font-normal text-[#9cb8aa]">
+                        <span className="text-xs text-[#9aa59e]">
                           {cons.filial_nome}
                         </span>
                       </th>
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-                            isSpecialist
-                              ? "bg-emerald-500/15 text-[#22c55e]"
-                              : "bg-amber-500/15 text-[#f59e0b]"
+                          className={`inline-flex items-center gap-1.5 text-xs ${
+                            isSpecialist ? "text-[#eef2ef]" : "text-[#9aa59e]"
                           }`}
                         >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              isSpecialist ? "bg-[#22c55e]" : "bg-[#68736c]"
+                            }`}
+                            aria-hidden="true"
+                          />
                           {cons.perfil_foco}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right font-mono font-bold text-[#f0fdf4] tabular-nums">
-                        {formatNumberBR(cons.margem_linhas_tecnicas_pct, 2)}%
+                      <td className="px-4 py-3 text-right font-mono font-medium text-[#eef2ef] tabular-nums">
+                        {formatNumberBR(cons.margem_linhas_tecnicas_pct, 1)}%
                       </td>
                       <td className="px-4 py-3 text-right font-mono tabular-nums">
                         <span
-                          className={`font-semibold ${
+                          className={
                             cons.vantagem_margem_tecnica_vs_commodity_pct > 0
-                              ? "text-[#22c55e]"
-                              : "text-[#9cb8aa]"
-                          }`}
+                              ? "text-[#4cc38a]"
+                              : "text-[#9aa59e]"
+                          }
                         >
                           {cons.vantagem_margem_tecnica_vs_commodity_pct > 0
                             ? "+"
@@ -558,7 +527,7 @@ export function RebalanceTable({
                           )}
                           % margem
                         </span>
-                        <p className="text-[10px] text-[#9cb8aa]">
+                        <p className="text-[11px] text-[#68736c]">
                           {cons.vantagem_conversao_tecnica_vs_commodity_pct > 0
                             ? "+"
                             : ""}
@@ -569,13 +538,11 @@ export function RebalanceTable({
                           % conversão
                         </p>
                       </td>
-                      <td className="px-4 py-3 text-right font-mono text-[#f0fdf4] tabular-nums">
+                      <td className="px-4 py-3 text-right font-mono text-[#eef2ef] tabular-nums">
                         {formatCurrencyBRL(cons.receita_linhas_tecnicas)}
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="rounded-lg border border-[#2a3f37] bg-[#121e19] px-2.5 py-1 font-mono text-[11px] text-[#d8e6dd]">
-                          {cons.categoria_destaque}
-                        </span>
+                      <td className="px-4 py-3 font-mono text-xs text-[#9aa59e]">
+                        {cons.categoria_destaque}
                       </td>
                     </tr>
                   );

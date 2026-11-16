@@ -2,13 +2,6 @@
 
 import React from "react";
 import {
-  AlertTriangle,
-  ArrowRightLeft,
-  Award,
-  CloudRainWind,
-  TrendingUp,
-} from "lucide-react";
-import {
   ClimateSalesAnomalyReport,
   ConsultantAffinityReport,
   StockRebalancingReport,
@@ -81,226 +74,197 @@ export function KpiCards({
 
   return (
     <section
-      aria-label="Indicadores Executivos Principais"
+      aria-label="Indicadores operacionais"
       className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
     >
-      {/* Card 1: Valor em Risco de Encalhe */}
-      <article className="relative overflow-hidden rounded-2xl border border-[#2a3f37] bg-[#1a2923] p-5 shadow-agro transition-colors hover:border-[#355247]">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.04em] text-[#9cb8aa]">
-              Valor em Risco de Encalhe
-            </p>
-            <span className="mt-0.5 inline-block font-mono text-[11px] text-[#5d7d70]">
-              Cobertura &gt; {remanejamento.max_coverage_days}d · Janela Plantio
-            </span>
-          </div>
-          <span
-            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-              scopedValorRisco > 0
-                ? "bg-red-500/15 text-[#ef4444]"
-                : "bg-emerald-500/15 text-[#22c55e]"
-            }`}
-            title="Status de Risco de Perda de Janela Agronômica"
-          >
-            <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
-            {scopedValorRisco > 0 ? "Risco Janela" : "Controlado"}
+      {/* Card 1: Valor em risco de encalhe */}
+      <article className="flex flex-col justify-between rounded-xl border border-white/[0.08] bg-[#171b19] p-5">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[13px] font-normal text-[#9aa59e]">
+            Capital em risco de janela
+          </p>
+          <span className="font-mono text-xs text-[#68736c] tabular-nums">
+            &gt; {remanejamento.max_coverage_days}d cobertura
           </span>
         </div>
 
-        <div className="mt-3 flex items-baseline gap-2">
+        <div className="mt-4 flex items-baseline gap-2">
           <p
-            className="text-3xl font-bold tracking-tight text-[#f0fdf4] tabular-nums"
+            className="text-[28px] font-medium leading-none text-[#eef2ef] tabular-nums"
             title={formatCurrencyBRL(scopedValorRisco)}
           >
             {formatCompactBRL(scopedValorRisco)}
           </p>
-          <span className="font-mono text-xs text-[#9cb8aa] tabular-nums">
-            ({formatCurrencyBRL(scopedValorRisco)})
+          <span className="text-sm font-normal text-[#9aa59e]">
+            em estoque crítico
           </span>
         </div>
 
-        <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-3 text-xs">
-          <span className="text-[#9cb8aa]">
+        <div className="mt-4 flex items-center justify-between border-t border-white/[0.06] pt-3 text-xs">
+          <span className="truncate text-[#9aa59e]">
             {scopedOriginTransfer
-              ? `Foco: ${scopedOriginTransfer.filial_origem_nome}`
-              : "Sem excesso (>60d) no escopo"}
+              ? scopedOriginTransfer.filial_origem_nome
+              : "Sem excesso crítico no escopo"}
           </span>
           {scopedOriginTransfer && (
-            <span className="font-mono font-semibold text-[#ef4444] tabular-nums">
+            <span className="font-mono text-[#e5484d] tabular-nums">
               {formatNumberBR(
                 scopedOriginTransfer.cobertura_origem_atual_dias,
                 1
               )}
-              d cobertura
+              d vs {remanejamento.max_coverage_days}d limite
             </span>
           )}
         </div>
       </article>
 
-      {/* Card 2: Anomalias Climáticas Ativas */}
-      <article className="relative overflow-hidden rounded-2xl border border-[#2a3f37] bg-[#1a2923] p-5 shadow-agro transition-colors hover:border-[#355247]">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.04em] text-[#9cb8aa]">
-              Anomalias Climáticas Ativas
-            </p>
-            <span className="mt-0.5 inline-block font-mono text-[11px] text-[#5d7d70]">
-              Janela móvel: últimos {anomalias.dias_analise} dias
-            </span>
-          </div>
-          <span
-            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-              anomalias.total_anomalias_criticas > 0
-                ? "bg-red-500/15 text-[#ef4444]"
-                : "bg-emerald-500/15 text-[#22c55e]"
-            }`}
-          >
-            <CloudRainWind className="h-3.5 w-3.5" aria-hidden="true" />
+      {/* Card 2: Anomalias climáticas ativas */}
+      <article className="flex flex-col justify-between rounded-xl border border-white/[0.08] bg-[#171b19] p-5">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[13px] font-normal text-[#9aa59e]">
+            Anomalias pluviométricas
+          </p>
+          <span className="inline-flex items-center gap-1.5 font-mono text-xs text-[#68736c] tabular-nums">
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                anomalias.total_anomalias_criticas > 0
+                  ? "bg-[#e5484d]"
+                  : "bg-[#4cc38a]"
+              }`}
+              aria-hidden="true"
+            />
             {anomalias.total_anomalias_criticas > 0
               ? `Z = ${formatNumberBR(
                   criticalBranch?.precipitacao_z_score ?? 0,
                   2
                 )}`
-              : "Normal"}
+              : `${anomalias.dias_analise}d normal`}
           </span>
         </div>
 
-        <div className="mt-3 flex items-baseline gap-2.5">
-          <p className="text-3xl font-bold tracking-tight text-[#f0fdf4] tabular-nums">
-            {anomalias.total_anomalias_criticas}{" "}
-            <span className="text-lg font-semibold text-[#9cb8aa]">
-              {anomalias.total_anomalias_criticas === 1
-                ? "Filial Crítica"
-                : "Filiais Críticas"}
-            </span>
+        <div className="mt-4 flex items-baseline gap-2">
+          <p className="text-[28px] font-medium leading-none text-[#eef2ef] tabular-nums">
+            {anomalias.total_anomalias_criticas}
           </p>
+          <span className="text-sm font-normal text-[#9aa59e]">
+            {anomalias.filiais.length === 1
+              ? "de 1 filial em estiagem"
+              : `de ${anomalias.filiais.length} filiais em estiagem`}
+          </span>
         </div>
 
-        <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-3 text-xs">
+        <div className="mt-4 flex items-center justify-between border-t border-white/[0.06] pt-3 text-xs">
           {criticalBranch ? (
             <>
-              <span className="truncate text-[#9cb8aa]">
-                {criticalBranch.filial_nome}: Sementes{" "}
-                <strong
-                  className={`tabular-nums ${
+              <span className="truncate text-[#9aa59e]">
+                Sementes{" "}
+                <span
+                  className={`font-mono tabular-nums ${
                     criticalBranch.queda_sementes_pct < -20
-                      ? "text-[#ef4444]"
-                      : "text-[#22c55e]"
+                      ? "text-[#e5484d]"
+                      : "text-[#eef2ef]"
                   }`}
                 >
                   {criticalBranch.queda_sementes_pct > 0 ? "+" : ""}
                   {formatNumberBR(criticalBranch.queda_sementes_pct, 1)}%
-                </strong>
+                </span>{" "}
+                vs média
               </span>
-              <span className="font-mono font-semibold text-[#f59e0b] tabular-nums">
+              <span className="font-mono text-[#d99b26] tabular-nums">
                 Seca {criticalBranch.alta_nutricao_seca_pct > 0 ? "+" : ""}
                 {formatNumberBR(criticalBranch.alta_nutricao_seca_pct, 1)}%
               </span>
             </>
           ) : (
-            <span className="text-[#9cb8aa]">
-              Regime pluviométrico estabilizado
+            <span className="text-[#9aa59e]">
+              Regime pluviométrico regular nos últimos {anomalias.dias_analise}d
             </span>
           )}
         </div>
       </article>
 
-      {/* Card 3: Oportunidades de Remanejamento */}
-      <article className="relative overflow-hidden rounded-2xl border border-[#2a3f37] bg-[#1a2923] p-5 shadow-agro transition-colors hover:border-[#355247]">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.04em] text-[#9cb8aa]">
-              Oportunidades de Remanejamento
-            </p>
-            <span className="mt-0.5 inline-block font-mono text-[11px] text-[#5d7d70]">
-              Gatilho &gt;{remanejamento.max_coverage_days}d → &lt;
-              {remanejamento.min_coverage_days}d
-            </span>
-          </div>
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] font-semibold text-[#f59e0b]">
-            <ArrowRightLeft className="h-3.5 w-3.5" aria-hidden="true" />
-            Transferência
+      {/* Card 3: Lotes para remanejamento */}
+      <article className="flex flex-col justify-between rounded-xl border border-white/[0.08] bg-[#171b19] p-5">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[13px] font-normal text-[#9aa59e]">
+            Transferências sugeridas
+          </p>
+          <span className="font-mono text-xs text-[#68736c] tabular-nums">
+            &gt;{remanejamento.max_coverage_days}d → &lt;
+            {remanejamento.min_coverage_days}d
           </span>
         </div>
 
-        <div className="mt-3 flex items-baseline gap-2">
-          <p className="text-3xl font-bold tracking-tight text-[#f0fdf4] tabular-nums">
-            {scopedTransfers.length}{" "}
-            <span className="text-lg font-semibold text-[#9cb8aa]">
-              {scopedTransfers.length === 1
-                ? "Lote Prioritário"
-                : "Lotes Prioritários"}
-            </span>
+        <div className="mt-4 flex items-baseline gap-2">
+          <p className="text-[28px] font-medium leading-none text-[#eef2ef] tabular-nums">
+            {scopedTransfers.length}
           </p>
+          <span className="text-sm font-normal text-[#9aa59e]">
+            {scopedTransfers.length === 1
+              ? "lote prioritário"
+              : "lotes prioritários"}
+          </span>
         </div>
 
-        <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-3 text-xs">
+        <div className="mt-4 flex items-center justify-between border-t border-white/[0.06] pt-3 text-xs">
           {primaryTransfer ? (
             <>
-              <span className="truncate text-[#9cb8aa]">
+              <span className="truncate text-[#9aa59e]">
                 {primaryTransfer.filial_origem_nome.replace("Filial ", "")} →{" "}
-                <strong className="text-[#f0fdf4]">
+                <span className="text-[#eef2ef]">
                   {primaryTransfer.filial_destino_nome.replace("Filial ", "")}
-                </strong>
+                </span>
               </span>
-              <span className="font-mono font-semibold text-[#22c55e] tabular-nums">
-                {formatNumberBR(primaryTransfer.quantidade_sugerida, 0)} un.
+              <span className="font-mono text-[#eef2ef] tabular-nums">
+                {formatNumberBR(primaryTransfer.quantidade_sugerida, 0)} un
               </span>
             </>
           ) : (
-            <span className="text-[#9cb8aa]">
-              Estoque balanceado no escopo selecionado
+            <span className="text-[#9aa59e]">
+              Estoque equilibrado na filial selecionada
             </span>
           )}
         </div>
       </article>
 
-      {/* Card 4: Prêmio de Afinidade Técnica */}
-      <article className="relative overflow-hidden rounded-2xl border border-[#2a3f37] bg-[#1a2923] p-5 shadow-agro transition-colors hover:border-[#355247]">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.04em] text-[#9cb8aa]">
-              Prêmio Especialista Técnico
-            </p>
-            <span className="mt-0.5 inline-block font-mono text-[11px] text-[#5d7d70]">
-              Sementes Premium &amp; Defensivos
-            </span>
-          </div>
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] font-semibold text-[#22c55e]">
-            <Award className="h-3.5 w-3.5" aria-hidden="true" />
-            Alta Conversão
+      {/* Card 4: Prêmio de afinidade técnica */}
+      <article className="flex flex-col justify-between rounded-xl border border-white/[0.08] bg-[#171b19] p-5">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[13px] font-normal text-[#9aa59e]">
+            Diferencial especialista técnico
+          </p>
+          <span className="font-mono text-xs text-[#68736c]">
+            Sementes e defensivos
           </span>
         </div>
 
-        <div className="mt-3 flex items-baseline gap-2">
-          <p className="text-3xl font-bold tracking-tight text-[#22c55e] tabular-nums">
+        <div className="mt-4 flex items-baseline gap-2">
+          <p className="text-[28px] font-medium leading-none text-[#22c55e] tabular-nums">
             +{formatNumberBR(afinidade.vantagem_media_especialista_pct, 1)}%
           </p>
-          <span className="text-xs font-medium text-[#9cb8aa]">
-            superioridade de margem
+          <span className="text-sm font-normal text-[#9aa59e]">
+            vs perfil commodity
           </span>
         </div>
 
-        <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-3 text-xs">
-          <span className="text-[#9cb8aa]">
-            Margem Técnica:{" "}
-            <strong className="text-[#f0fdf4] tabular-nums">
+        <div className="mt-4 flex items-center justify-between border-t border-white/[0.06] pt-3 text-xs">
+          <span className="text-[#9aa59e]">
+            Margem{" "}
+            <span className="font-mono text-[#eef2ef] tabular-nums">
               {formatNumberBR(
                 afinidade.margem_media_especialista_tecnico_pct,
                 1
               )}
               %
-            </strong>{" "}
-            vs.{" "}
-            <span className="tabular-nums">
+            </span>{" "}
+            vs{" "}
+            <span className="font-mono tabular-nums">
               {formatNumberBR(afinidade.margem_media_volume_commodity_pct, 1)}%
             </span>
           </span>
-          <span className="inline-flex items-center gap-0.5 font-mono font-semibold text-[#22c55e] tabular-nums">
-            <TrendingUp className="h-3 w-3" aria-hidden="true" />+
-            {formatNumberBR(afinidade.vantagem_conversao_especialista_pct, 1)}%
-            vol
+          <span className="font-mono text-[#4cc38a] tabular-nums">
+            +{formatNumberBR(afinidade.vantagem_conversao_especialista_pct, 1)}%
+            conversão
           </span>
         </div>
       </article>
